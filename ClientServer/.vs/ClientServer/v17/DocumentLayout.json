@@ -1,0 +1,41 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\brook\\Desktop\\Winter 2026\\Project VI\\Project6Part2\\ClientServer\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{0A68DC8F-D777-4476-A93B-238083AED4F3}|ClientServer\\ClientServer.vcxproj|C:\\Users\\brook\\Desktop\\Winter 2026\\Project VI\\Project6Part2\\ClientServer\\ClientServer\\ClientServer.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{0A68DC8F-D777-4476-A93B-238083AED4F3}|ClientServer\\ClientServer.vcxproj|solutionrelative:ClientServer\\ClientServer.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "ClientServer.cpp",
+              "DocumentMoniker": "C:\\Users\\brook\\Desktop\\Winter 2026\\Project VI\\Project6Part2\\ClientServer\\ClientServer\\ClientServer.cpp",
+              "RelativeDocumentMoniker": "ClientServer\\ClientServer.cpp",
+              "ToolTip": "C:\\Users\\brook\\Desktop\\Winter 2026\\Project VI\\Project6Part2\\ClientServer\\ClientServer\\ClientServer.cpp",
+              "RelativeToolTip": "ClientServer\\ClientServer.cpp",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAABBAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2026-03-15T00:30:56.691Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
