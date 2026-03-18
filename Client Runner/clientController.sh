@@ -20,4 +20,7 @@ for ((i=0; i<num_clients; i++)); do
 
     #runs built command
     "$program" "$file" "$server_ip" "$server_port"
+
+    #can decrease sleep to 0.1 or 0.05
+    sleep 1
 done
