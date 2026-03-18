@@ -1,8 +1,10 @@
 // Server.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
-
+#include <windows.networking.sockets.h>
 #include <iostream>
+#include "../ClientServer/Packet.h"
 
+#pragma comment(lib, "Ws2_32.lib")
 int main()
 {
     std::cout << "Hello World!\n";

@@ -1,13 +1,45 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Users\\cbg75\\source\\repos\\Project6Part2\\ClientServer\\",
+  "WorkspaceRootPath": "C:\\Users\\brook\\Desktop\\Winter 2026\\Project VI\\Project6Part2\\ClientServer\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{287996E8-7683-427D-A01C-DFBCB491B891}|Server\\Server.vcxproj|C:\\Users\\cbg75\\source\\repos\\Project6Part2\\ClientServer\\Server\\Server.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{287996E8-7683-427D-A01C-DFBCB491B891}|Server\\Server.vcxproj|solutionrelative:Server\\Server.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+      "AbsoluteMoniker": "D:0:0:{0A68DC8F-D777-4476-A93B-238083AED4F3}|ClientServer\\ClientServer.vcxproj|C:\\Users\\brook\\Desktop\\Winter 2026\\Project VI\\Project6Part2\\ClientServer\\ClientServer\\FileReader.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{0A68DC8F-D777-4476-A93B-238083AED4F3}|ClientServer\\ClientServer.vcxproj|solutionrelative:ClientServer\\FileReader.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{0A68DC8F-D777-4476-A93B-238083AED4F3}|ClientServer\\ClientServer.vcxproj|C:\\Users\\cbg75\\source\\repos\\Project6Part2\\ClientServer\\ClientServer\\Client.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "AbsoluteMoniker": "D:0:0:{287996E8-7683-427D-A01C-DFBCB491B891}|Server\\Server.vcxproj|C:\\Users\\brook\\Desktop\\Winter 2026\\Project VI\\Project6Part2\\ClientServer\\Server\\ClientRecord.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{287996E8-7683-427D-A01C-DFBCB491B891}|Server\\Server.vcxproj|solutionrelative:Server\\ClientRecord.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{287996E8-7683-427D-A01C-DFBCB491B891}|Server\\Server.vcxproj|C:\\Users\\brook\\Desktop\\Winter 2026\\Project VI\\Project6Part2\\ClientServer\\Server\\DataLogging.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{287996E8-7683-427D-A01C-DFBCB491B891}|Server\\Server.vcxproj|solutionrelative:Server\\DataLogging.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{287996E8-7683-427D-A01C-DFBCB491B891}|Server\\Server.vcxproj|C:\\Users\\brook\\Desktop\\Winter 2026\\Project VI\\Project6Part2\\ClientServer\\Server\\DataLogging.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{287996E8-7683-427D-A01C-DFBCB491B891}|Server\\Server.vcxproj|solutionrelative:Server\\DataLogging.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{287996E8-7683-427D-A01C-DFBCB491B891}|Server\\Server.vcxproj|C:\\Users\\brook\\Desktop\\Winter 2026\\Project VI\\Project6Part2\\ClientServer\\Server\\ClientRecord.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{287996E8-7683-427D-A01C-DFBCB491B891}|Server\\Server.vcxproj|solutionrelative:Server\\ClientRecord.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{287996E8-7683-427D-A01C-DFBCB491B891}|Server\\Server.vcxproj|C:\\Users\\brook\\Desktop\\Winter 2026\\Project VI\\Project6Part2\\ClientServer\\Server\\Server.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{287996E8-7683-427D-A01C-DFBCB491B891}|Server\\Server.vcxproj|solutionrelative:Server\\Server.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0A68DC8F-D777-4476-A93B-238083AED4F3}|ClientServer\\ClientServer.vcxproj|C:\\Users\\brook\\Desktop\\Winter 2026\\Project VI\\Project6Part2\\ClientServer\\ClientServer\\FileReader.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{0A68DC8F-D777-4476-A93B-238083AED4F3}|ClientServer\\ClientServer.vcxproj|solutionrelative:ClientServer\\FileReader.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0A68DC8F-D777-4476-A93B-238083AED4F3}|ClientServer\\ClientServer.vcxproj|C:\\Users\\brook\\Desktop\\Winter 2026\\Project VI\\Project6Part2\\ClientServer\\ClientServer\\Client.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{0A68DC8F-D777-4476-A93B-238083AED4F3}|ClientServer\\ClientServer.vcxproj|solutionrelative:ClientServer\\Client.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0A68DC8F-D777-4476-A93B-238083AED4F3}|ClientServer\\ClientServer.vcxproj|C:\\Users\\brook\\Desktop\\Winter 2026\\Project VI\\Project6Part2\\ClientServer\\ClientServer\\Packet.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{0A68DC8F-D777-4476-A93B-238083AED4F3}|ClientServer\\ClientServer.vcxproj|solutionrelative:ClientServer\\Packet.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0A68DC8F-D777-4476-A93B-238083AED4F3}|ClientServer\\ClientServer.vcxproj|C:\\Users\\brook\\Desktop\\Winter 2026\\Project VI\\Project6Part2\\ClientServer\\ClientServer\\Client.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{0A68DC8F-D777-4476-A93B-238083AED4F3}|ClientServer\\ClientServer.vcxproj|solutionrelative:ClientServer\\Client.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     }
   ],
@@ -18,79 +50,141 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 9,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Bookmark",
-              "Name": "ST:129:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:130:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:131:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:132:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:136:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:137:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{1c64b9c2-e352-428e-a56d-0ace190b99a6}"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{34e76e81-ee4a-11d0-ae2e-00a0c90fffc3}"
+              "Name": "ST:128:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
             },
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "Server.cpp",
-              "DocumentMoniker": "C:\\Users\\cbg75\\source\\repos\\Project6Part2\\ClientServer\\Server\\Server.cpp",
-              "RelativeDocumentMoniker": "Server\\Server.cpp",
-              "ToolTip": "C:\\Users\\cbg75\\source\\repos\\Project6Part2\\ClientServer\\Server\\Server.cpp",
-              "RelativeToolTip": "Server\\Server.cpp",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAADAAAAAAAAAA==",
+              "Title": "FileReader.cpp",
+              "DocumentMoniker": "C:\\Users\\brook\\Desktop\\Winter 2026\\Project VI\\Project6Part2\\ClientServer\\ClientServer\\FileReader.cpp",
+              "RelativeDocumentMoniker": "ClientServer\\FileReader.cpp",
+              "ToolTip": "C:\\Users\\brook\\Desktop\\Winter 2026\\Project VI\\Project6Part2\\ClientServer\\ClientServer\\FileReader.cpp",
+              "RelativeToolTip": "ClientServer\\FileReader.cpp",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
-              "WhenOpened": "2026-03-17T15:09:55.794Z",
+              "WhenOpened": "2026-03-18T19:18:15.607Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "Client.cpp",
-              "DocumentMoniker": "C:\\Users\\cbg75\\source\\repos\\Project6Part2\\ClientServer\\ClientServer\\Client.cpp",
-              "RelativeDocumentMoniker": "ClientServer\\Client.cpp",
-              "ToolTip": "C:\\Users\\cbg75\\source\\repos\\Project6Part2\\ClientServer\\ClientServer\\Client.cpp",
-              "RelativeToolTip": "ClientServer\\Client.cpp",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAJAAAAAAAAAA==",
+              "Title": "ClientRecord.cpp",
+              "DocumentMoniker": "C:\\Users\\brook\\Desktop\\Winter 2026\\Project VI\\Project6Part2\\ClientServer\\Server\\ClientRecord.cpp",
+              "RelativeDocumentMoniker": "Server\\ClientRecord.cpp",
+              "ToolTip": "C:\\Users\\brook\\Desktop\\Winter 2026\\Project VI\\Project6Part2\\ClientServer\\Server\\ClientRecord.cpp",
+              "RelativeToolTip": "Server\\ClientRecord.cpp",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
-              "WhenOpened": "2026-03-15T00:30:56.691Z",
+              "WhenOpened": "2026-03-18T19:17:57.623Z",
               "EditorCaption": ""
-            }
-          ]
-        },
-        {
-          "DockedWidth": 109,
-          "SelectedChildIndex": -1,
-          "Children": [
+            },
             {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{e1b7d1f8-9b3c-49b1-8f4f-bfc63a88835d}"
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "DataLogging.cpp",
+              "DocumentMoniker": "C:\\Users\\brook\\Desktop\\Winter 2026\\Project VI\\Project6Part2\\ClientServer\\Server\\DataLogging.cpp",
+              "RelativeDocumentMoniker": "Server\\DataLogging.cpp",
+              "ToolTip": "C:\\Users\\brook\\Desktop\\Winter 2026\\Project VI\\Project6Part2\\ClientServer\\Server\\DataLogging.cpp",
+              "RelativeToolTip": "Server\\DataLogging.cpp",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2026-03-18T19:17:48.66Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "DataLogging.h",
+              "DocumentMoniker": "C:\\Users\\brook\\Desktop\\Winter 2026\\Project VI\\Project6Part2\\ClientServer\\Server\\DataLogging.h",
+              "RelativeDocumentMoniker": "Server\\DataLogging.h",
+              "ToolTip": "C:\\Users\\brook\\Desktop\\Winter 2026\\Project VI\\Project6Part2\\ClientServer\\Server\\DataLogging.h",
+              "RelativeToolTip": "Server\\DataLogging.h",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2026-03-18T19:17:26.516Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "ClientRecord.h",
+              "DocumentMoniker": "C:\\Users\\brook\\Desktop\\Winter 2026\\Project VI\\Project6Part2\\ClientServer\\Server\\ClientRecord.h",
+              "RelativeDocumentMoniker": "Server\\ClientRecord.h",
+              "ToolTip": "C:\\Users\\brook\\Desktop\\Winter 2026\\Project VI\\Project6Part2\\ClientServer\\Server\\ClientRecord.h",
+              "RelativeToolTip": "Server\\ClientRecord.h",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2026-03-18T19:17:11.053Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Server.h",
+              "DocumentMoniker": "C:\\Users\\brook\\Desktop\\Winter 2026\\Project VI\\Project6Part2\\ClientServer\\Server\\Server.h",
+              "RelativeDocumentMoniker": "Server\\Server.h",
+              "ToolTip": "C:\\Users\\brook\\Desktop\\Winter 2026\\Project VI\\Project6Part2\\ClientServer\\Server\\Server.h",
+              "RelativeToolTip": "Server\\Server.h",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2026-03-18T19:17:00.621Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "FileReader.h",
+              "DocumentMoniker": "C:\\Users\\brook\\Desktop\\Winter 2026\\Project VI\\Project6Part2\\ClientServer\\ClientServer\\FileReader.h",
+              "RelativeDocumentMoniker": "ClientServer\\FileReader.h",
+              "ToolTip": "C:\\Users\\brook\\Desktop\\Winter 2026\\Project VI\\Project6Part2\\ClientServer\\ClientServer\\FileReader.h",
+              "RelativeToolTip": "ClientServer\\FileReader.h",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2026-03-18T19:16:38.857Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "Client.h",
+              "DocumentMoniker": "C:\\Users\\brook\\Desktop\\Winter 2026\\Project VI\\Project6Part2\\ClientServer\\ClientServer\\Client.h",
+              "RelativeDocumentMoniker": "ClientServer\\Client.h",
+              "ToolTip": "C:\\Users\\brook\\Desktop\\Winter 2026\\Project VI\\Project6Part2\\ClientServer\\ClientServer\\Client.h",
+              "RelativeToolTip": "ClientServer\\Client.h",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2026-03-18T19:16:08.42Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "Packet.h",
+              "DocumentMoniker": "C:\\Users\\brook\\Desktop\\Winter 2026\\Project VI\\Project6Part2\\ClientServer\\ClientServer\\Packet.h",
+              "RelativeDocumentMoniker": "ClientServer\\Packet.h",
+              "ToolTip": "C:\\Users\\brook\\Desktop\\Winter 2026\\Project VI\\Project6Part2\\ClientServer\\ClientServer\\Packet.h",
+              "RelativeToolTip": "ClientServer\\Packet.h",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2026-03-18T17:14:58.639Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "Client.cpp",
+              "DocumentMoniker": "C:\\Users\\brook\\Desktop\\Winter 2026\\Project VI\\Project6Part2\\ClientServer\\ClientServer\\Client.cpp",
+              "RelativeDocumentMoniker": "ClientServer\\Client.cpp",
+              "ToolTip": "C:\\Users\\brook\\Desktop\\Winter 2026\\Project VI\\Project6Part2\\ClientServer\\ClientServer\\Client.cpp",
+              "RelativeToolTip": "ClientServer\\Client.cpp",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAdAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2026-03-18T17:04:57.893Z",
+              "EditorCaption": ""
             }
           ]
         }

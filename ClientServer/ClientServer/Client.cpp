@@ -1,7 +1,13 @@
 // Client.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
+#include <windows.networking.sockets.h>
+#pragma comment(lib, "Ws2_32.lib")
 
+#include <fstream>
+#include <string>
 #include <iostream>
+#include "Packet.h"
+#include "Client.h"
 
 int main()
 {
