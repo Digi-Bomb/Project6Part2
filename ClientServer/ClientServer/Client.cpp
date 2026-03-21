@@ -9,12 +9,12 @@
 
 int main()
 {
-    Client cli = Client("ip", 0, "filename", createId()); // TODO: Colin get ip/port/filename from bash/command line
+    Client cli = Client("ip", 0, "filename", generateId()); // TODO: Colin get ip/port/filename from bash/command line
     cli.run();
     std::cout << "Hello World!\n";
 }
 
-char* createId() // TODO: to be implemented by Colin
+char* generateId() // TODO: to be implemented by Colin
 {
     
 }
