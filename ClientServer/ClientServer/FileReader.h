@@ -5,16 +5,16 @@
 
 class FileReader {
 private:
-    std::string filePath;
+    char* filePath;
     std::ifstream fileStream;
     int lineNumber;
 
 public:
-    FileReader(const std::string& path);
+    FileReader(const char* path);
     ~FileReader();
     bool openFile();
     bool readLine(std::string& lineRead);
     bool isEOF();
     int getLineNumber() const { return lineNumber; }
-    std::string getFilePath() const { return filePath; }
+    const char* getFilePath() const { return filePath; }
 };
