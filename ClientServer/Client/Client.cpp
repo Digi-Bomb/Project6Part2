@@ -11,7 +11,7 @@ int main()
 {
     Client cli = Client("ip", 0, "filename", generateId()); // TODO: Colin get ip/port/filename from bash/command line
     cli.run();
-    std::cout << "Hello World!\n";
+    // clean up like calling destructors for Client and its fileReader are done here (including closing socket and handling file i/o stuff)
 }
 
 char* generateId() // TODO: to be implemented by Colin
@@ -80,13 +80,6 @@ int Client::getServerPort() const {
     return this->serverPort;
 }
 
-int Client::getFileLineNumber() const {
-    if (fileReader) {
-        return fileReader->getLineNumber();
-    }
-    return 0;
-}
-
 void Client::setClientID(const char* id) {
     if (id) {
         strncpy_s(this->clientID, id, 9);
@@ -110,19 +103,84 @@ void Client::setServerPort(int port) {
 
 void Client::run()
 {
+    if (!this->fileReader->openFile())
+    {
+        std::cerr << "Unable to open file" << std::endl; // TODO: change to a log
+    }
+    // send SOF
+    this->sendStartOfFile();
+    while (!this->fileReader->isEOF())
+    {
+        std::string line;
+        // read line
+        if (this->fileReader->readLine(line))
+        {
+            // send telemetry data
+            this->sendTelemetry(line);
+        }
+        Sleep(1000); // so that at most 1 telemetry packet is sent every second
+    }
+    // send EOF
+    this->sendEndOfFile();
 }
 
 bool Client::sendStartOfFile()
 {
-    return false;
+    Packet pkt;
+    pkt.setClientID(this->clientID);
+    pkt.setStartFlag(true);
+    pkt.setEndFlag(false);
+
+    std::string info = std::string(this->fileReader->getFilePath());
+    pkt.setData((char*)info.c_str(), (int)info.length());
+
+    int totalSize = 0;
+    char* buffer = pkt.serialize(totalSize);
+
+    int bytesSent = sendto(this->clientSocket, buffer, totalSize, 0,
+        (sockaddr*)&this->serverAddr, sizeof(this->serverAddr));
+    delete[] buffer;
+    return (bytesSent != SOCKET_ERROR);
 }
 
 bool Client::sendTelemetry(const std::string& data)
 {
-    return false;
+    Packet pkt;
+    pkt.setClientID(this->clientID);
+    pkt.setStartFlag(false);
+    pkt.setEndFlag(false);
+
+    pkt.setData((char*)data.c_str(), (int)data.length());
+
+    int totalSize = 0;
+    char* buffer = pkt.serialize(totalSize);
+
+    int bytesSent = sendto(this->clientSocket, buffer, totalSize, 0,
+        (sockaddr*)&this->serverAddr, sizeof(this->serverAddr));
+
+    if (bytesSent == SOCKET_ERROR) {
+        std::cerr << "Telemetry failed to send: " << WSAGetLastError() << std::endl; // TODO: change to a log
+        delete[] buffer;
+        return false;
+    }
+    delete[] buffer;
+    return true;
 }
 
 bool Client::sendEndOfFile()
 {
-    return false;
+    Packet pkt;
+    pkt.setClientID(this->clientID);
+    pkt.setStartFlag(false);
+    pkt.setEndFlag(true);
+
+    pkt.setData((char*)"", 0);
+
+    int totalSize = 0;
+    char* buffer = pkt.serialize(totalSize);
+
+    int bytesSent = sendto(this->clientSocket, buffer, totalSize, 0,
+        (sockaddr*)&this->serverAddr, sizeof(this->serverAddr));
+    delete[] buffer;
+    return (bytesSent != SOCKET_ERROR);
 }

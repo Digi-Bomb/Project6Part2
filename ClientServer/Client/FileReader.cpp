@@ -31,10 +31,29 @@ bool FileReader::openFile()
 
 bool FileReader::readLine(std::string& lineRead)
 {
-	return false;
+    if (this->fileStream.is_open() && !this->isEOF()) {
+        if (std::getline(this->fileStream, lineRead)) {
+            this->lineNumber++;
+            return true;
+        }
+    }
+    return false;
 }
 
 bool FileReader::isEOF()
 {
-	return false;
+    if (!this->fileStream.is_open()) {
+        return true;
+    }
+
+    if (this->fileStream.eof()) {
+        return true;
+    }
+
+    int nextChar = this->fileStream.peek();
+    if (nextChar == EOF) {
+        return true;
+    }
+
+    return false;
 }
