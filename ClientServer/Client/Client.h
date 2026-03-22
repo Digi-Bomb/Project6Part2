@@ -22,7 +22,6 @@ public:
     const char* getClientID() const;
     const char* getServerIP() const;
     int getServerPort() const;
-    int getFileLineNumber() const;
     void setClientID(const char* id);
     void setServerIP(const char* ip);
     void setServerPort(int port);

@@ -8,7 +8,6 @@ class Packet {
         bool endFlag;             // True if EOF (End of Flight)
         char clientID[10];        // Unique ID for the flight
         unsigned int packetSize;  // Total size of body
-        unsigned int checkSum;    // Checksum for integrity
     } Head;
     char* data;         // Telemetry data
     unsigned int crc;   // Cyclic Redundancy Check
