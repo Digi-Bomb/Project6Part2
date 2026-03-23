@@ -1,9 +1,9 @@
-// Server.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
 #include <windows.networking.sockets.h>
 #include <iostream>
 #include <string>
 #include "Server.h"
+
+#define HEADER_SIZE 16
 
 #pragma comment(lib, "Ws2_32.lib")
 
@@ -11,19 +11,20 @@ int main()
 {
     Server ser = Server();
     ser.beginServerConnections();
-    std::cout << "Hello World!\n";
 }
+
+Server::~Server() {}
 
 void Server::beginServerConnections() {
     WSADATA wsaData;
 
-    // 1. Initialize Winsock
+    // Initialize Winsock
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
         std::cerr << "WSAStartup failed\n";
         return;
     }
 
-    // 2. Create UDP socket
+    // Create UDP socket
     this->serverSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (this->serverSocket == INVALID_SOCKET) {
         std::cerr << "Socket creation failed\n";
@@ -31,9 +32,9 @@ void Server::beginServerConnections() {
         return;
     }
 
-    // 3. Set up server address
+    // Set up server address
     this->serverAddr.sin_family = AF_INET;
-    this->serverAddr.sin_port = htons(67670);
+    this->serverAddr.sin_port = htons(6767);
     this->serverAddr.sin_addr.s_addr = INADDR_ANY; // accept from any client
 
     // 4. Bind socket
@@ -44,12 +45,13 @@ void Server::beginServerConnections() {
         return;
     }
 
-    std::cout << "UDP Server listening on port 67670...\n";
+    std::cout << "UDP Server listening on port 6767...\n";
 
-    // 5. Receive loop
     char buffer[1024];
     int clientLen = sizeof(this->clientAddr);
 
+    // Receive loop
+    // Need to change into a seperate "Receive connections" function
     while (true) {
         int bytesReceived = recvfrom(
             this->serverSocket,
@@ -65,33 +67,55 @@ void Server::beginServerConnections() {
             continue;
         }
 
-        buffer[bytesReceived] = '\0'; // null terminate
+        // Make sure we received at least a header
+        if (bytesReceived < HEADER_SIZE) {
+            std::cerr << "Received packet too small!\n";
+            continue;
+        }
 
-        std::cout << "Received: " << buffer << std::endl;
+      
+        Packet* cur = new Packet(buffer);;
 
-        // // send response back
-        // std::string reply = "Message received";
-        // sendto(
-        //     serverSocket,
-        //     reply.c_str(),
-        //     reply.size(),
-        //     0,
-        //     (sockaddr*)&clientAddr,
-        //     clientLen
-        // );
+        if (cur->getStartFlag()) {
+
+            std::cout << "This is a start of flight packet: " << std::endl;
+            std::string clientID(cur->getClientID());
+            time_t timeNow;
+            time(&timeNow);
+
+            setActiveClient(clientID, timeNow); //Set mapping table entry to client ID
+            
+        }
+
+        if (cur->getEndFlag()) {
+            std::cout << "This is an end of flight packet: " << std::endl;
+            //TODO: Remove mapping table entry
+        }
+
+        //TO DO: handle and parse body data:
+        // else(){
+        // 
+        // }
+        
+        // print active clients
+        std::cout << "Active clients:\n";
+        for (const auto& client : this->activeClients) {
+            char timeStr[26];
+            ctime_s(timeStr, sizeof(timeStr), &client.second);
+            std::cout << client.first << " last seen at: " << timeStr;
+        }
+      
     }
 
-    // Cleanup (never reached in this loop, but good practice)
-    closesocket(serverSocket);
+    // Cleanup (not yet reachable, but good practice)
+    closesocket(this->serverSocket);
     WSACleanup();
 }
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu
 
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errors
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file
+void Server::setActiveClient(std::string clientID, time_t lastReceivedPacket) {
+    
+    this->activeClients[clientID] = lastReceivedPacket;
+    //std::cout << "New client added: " << clientID << std::endl;
+
+}
+

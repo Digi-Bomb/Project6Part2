@@ -1,25 +1,26 @@
 #pragma once
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <windows.networking.sockets.h>
 #include <string>
 #include "Packet.h"
-//#include "FileReader.h"
 #include <iostream>
 #include <map>
+#include <ctime>
 
-// using namespace std;
 
 class Server {
 private: 
     SOCKET serverSocket;
-    std::map<std::string, std::string> activeClients;
+    std::map<std::string, std::time_t> activeClients;
     sockaddr_in serverAddr;
     sockaddr_in clientAddr;
-
-   // char*
 
 public:
     //Server()
     ~Server();
     void beginServerConnections();
+    void receiveConnections(char* buffer, int clientLength);
+    void setActiveClient(std::string clientID, time_t lastReceivedPacket);
     
 };

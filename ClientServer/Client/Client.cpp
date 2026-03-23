@@ -4,20 +4,35 @@
 #include <fstream>
 #include <string>
 #include <iostream>
+#include <cstdlib>
 #include "Packet.h"
 #include "Client.h"
 
 int main()
 {
-    Client cli = Client("ip", 0, "filename", generateId()); // TODO: Colin get ip/port/filename from bash/command line
-    cli.run();
+    // TODO: Colin get ip/port/filename from bash/command line
+    //Client cli = Client("ip", 0, "filename", generateId()); 
+
+    //Makeshift/In-place random ID generation (simulates 10 clients)
+    for (int i = 0; i < 10; i++) {
+        int client_id = rand() % 100;
+        char clientid[16];
+        sprintf_s(clientid, sizeof(clientid), "CLIENT%d", client_id);
+        std::cout << "generated id: " << clientid << std::endl;
+        Client cli = Client("127.0.0.1", 6767, "..\\..\\DataFiles\\katl-kefd-B737-700.txt", clientid);
+        cli.run();
+    }
+   
+    return 0;
     // clean up like calling destructors for Client and its fileReader are done here (including closing socket and handling file i/o stuff)
 }
 
-char* generateId() // TODO: to be implemented by Colin
-{
-    
-}
+// TODO: to be implemented by Colin vvvvvvvv
+
+//char* generateId() 
+//{
+//    
+//}
 
 Client::Client(const char* ip, int port, const char* fileName, const char* id) {
     this->serverPort = port;
@@ -107,21 +122,23 @@ void Client::run()
     {
         std::cerr << "Unable to open file" << std::endl; // TODO: change to a log
     }
-    // send SOF
+   
+    //// send SOF is the only tested function, but others should work
     this->sendStartOfFile();
-    while (!this->fileReader->isEOF())
-    {
-        std::string line;
-        // read line
-        if (this->fileReader->readLine(line))
-        {
-            // send telemetry data
-            this->sendTelemetry(line);
-        }
-        Sleep(1000); // so that at most 1 telemetry packet is sent every second
-    }
-    // send EOF
-    this->sendEndOfFile();
+
+    //while (!this->fileReader->isEOF())
+    //{
+    //    std::string line;
+    //    // read line
+    //    if (this->fileReader->readLine(line))
+    //    {
+    //        // send telemetry data
+    //        this->sendTelemetry(line);
+    //    }
+    //    Sleep(1000); // so that at most 1 telemetry packet is sent every second
+    //}
+    //// send EOF
+    //this->sendEndOfFile();
 }
 
 bool Client::sendStartOfFile()
@@ -131,7 +148,8 @@ bool Client::sendStartOfFile()
     pkt.setStartFlag(true);
     pkt.setEndFlag(false);
 
-    std::string info = std::string(this->fileReader->getFilePath());
+    std::string info = (this->fileReader->getFilePath());
+	std::cout << "The info being set is: " << info << std::endl;
     pkt.setData((char*)info.c_str(), (int)info.length());
 
     int totalSize = 0;
@@ -139,8 +157,10 @@ bool Client::sendStartOfFile()
 
     int bytesSent = sendto(this->clientSocket, buffer, totalSize, 0,
         (sockaddr*)&this->serverAddr, sizeof(this->serverAddr));
-    delete[] buffer;
+    //delete[] buffer; THIS BUFFER MIGHT BE AN EXTRA DELETION
+    std::cout << "sent SOF" << std::endl;
     return (bytesSent != SOCKET_ERROR);
+
 }
 
 bool Client::sendTelemetry(const std::string& data)

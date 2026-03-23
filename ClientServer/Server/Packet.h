@@ -30,7 +30,7 @@ public:
 
         // memcpy => tail/CRC
         memcpy(&crc, src + sizeof(Head) + Head.packetSize, sizeof(unsigned int));
-
+    
         // set txBuffer pointer to NULL
         txBuffer = nullptr;
     }
@@ -75,7 +75,7 @@ public:
 
     // SERIALIZE: Converts object to byte stream for sendto()
     char* serialize(int& totalSize) {
-        //  if (txBuffer) delete[] txBuffer; // Clear previous buffer
+      //  if (txBuffer) delete[] txBuffer; // Clear previous buffer
 
         crc = calculateCRC();
         totalSize = sizeof(Head) + Head.packetSize + sizeof(unsigned int);
