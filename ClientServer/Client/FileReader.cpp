@@ -20,6 +20,7 @@ FileReader::~FileReader()
 
 bool FileReader::openFile()
 {
+
     if (this->filePath == nullptr) {
         return false;
     }
@@ -42,16 +43,28 @@ bool FileReader::readLine(std::string& lineRead)
 
 bool FileReader::isEOF()
 {
+
+    // clear failbit (might not be an error when opening file through cmd, but these lines enable manual testing)
+    this->fileStream.clear();      
+   // this->fileStream.seekg(0);     
+
     if (!this->fileStream.is_open()) {
+        
         return true;
     }
 
     if (this->fileStream.eof()) {
+      
         return true;
+    }
+
+    while (isspace(this->fileStream.peek())) {
+        this->fileStream.get();
     }
 
     int nextChar = this->fileStream.peek();
     if (nextChar == EOF) {
+       
         return true;
     }
 

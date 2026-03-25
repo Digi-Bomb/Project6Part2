@@ -20,7 +20,7 @@ public:
     //Server()
     ~Server();
     void beginServerConnections();
-    void receiveConnections(char* buffer, int clientLength);
-    void setActiveClient(std::string clientID, time_t lastReceivedPacket);
+    void receiveConnections(char* buffer, int clientLength, int bytesReceived);
+    void updateActiveClient(std::string clientID, time_t lastReceivedPacket);
     
 };

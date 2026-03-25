@@ -62,10 +62,16 @@ public:
         return Head.packetSize;
     }
 
+    char* getTelemetryData() {
+        return this->data;
+    }
+
+
+
     void setData(char* srcData, int size) {
-        std::cout << "setData called\n";
+      /*  std::cout << "setData called\n";
         std::cout << "size parameter: " << size << std::endl;
-        std::cout << "strlen(srcData): " << strlen(srcData) << std::endl;
+        std::cout << "strlen(srcData): " << strlen(srcData) << std::endl;*/
         if (data) delete[] data;
         Head.packetSize = size;
         data = new char[Head.packetSize + 1];
