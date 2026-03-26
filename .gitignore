@@ -426,5 +426,4 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
-.vs/
 .vs/ 
