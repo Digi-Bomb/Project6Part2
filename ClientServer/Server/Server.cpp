@@ -4,6 +4,8 @@
 #include "Server.h"
 #include <vector>
 #include <sstream>
+#include <iomanip>
+
 
 // Static values for pointer arithmetic
 #define HEADER_SIZE 16
@@ -124,11 +126,12 @@ void Server::receiveConnections(char* buffer, int clientLength, int bytesReceive
     if (cur->getStartFlag()) {
 
         std::cout << "Received Client: " << clientID << std::endl;
-       
+        std::string flightFile(cur->getTelemetryData());
         
         time(&timeNow);
 
         updateActiveClient(clientID, timeNow); //Set mapping table entry to client ID
+        addRecorderToClient(clientID, flightFile, timeNow);
 
     }
 
@@ -137,7 +140,6 @@ void Server::receiveConnections(char* buffer, int clientLength, int bytesReceive
 
         this->activeClients.erase(clientID);
 
-        //TODO: Remove mapping table entry
     }
 
     //TO DO: handle and parse body data:
@@ -147,7 +149,7 @@ void Server::receiveConnections(char* buffer, int clientLength, int bytesReceive
         updateActiveClient(clientID, timeNow);
         // Initialize variables for local storage
         std::vector<std::string> bodyParts;
-        std::string part, date, time, fuel;
+        std::string part, unconverted_date, unconverted_time, unconverted_fuel;
 
         // Determine the size of the received data, and obtain the data seperately.
         int CurBodySize = bytesReceived - HEADER_SIZE - TAIL_SIZE;
@@ -166,32 +168,87 @@ void Server::receiveConnections(char* buffer, int clientLength, int bytesReceive
 
         // Only if a space exists, parse the data
         if (spacePos != std::string::npos) {
-            date = bodyParts[0].substr(0, spacePos);
-            time = bodyParts[0].substr(spacePos + 1);
+            unconverted_date = bodyParts[0].substr(0, spacePos);
+            unconverted_time = bodyParts[0].substr(spacePos + 1);
         }
 
         else {
-            date = bodyParts[0];
-            time = "";
+            unconverted_date = bodyParts[0];
+            unconverted_time = "";
         }
 
         // Store the fuel value
-        fuel = bodyParts[1];
+        unconverted_fuel = bodyParts[1];
 
 
         // Debugging print
-        std::cout << "date: " << date << ", time: " << time << ", fuel: " << fuel << std::endl;
+        std::cout << "date: " << unconverted_date << ", time: " << unconverted_time << ", fuel: " << unconverted_fuel << std::endl;
 
-
+        float fuel = std::stof(unconverted_fuel);
+        time_t parsedTime(convertStringToTime(unconverted_time, unconverted_date));
+        
+        callDataLogic(clientID, fuel, parsedTime);
+        
         // TO DO: Call Data Logic Module!!!!!
        
     }
 
+}
+
+ClientRecord Server::getClientsRecorder(std::string clientID) {
+
+    return this->recorder.at(clientID);
+    
+};
+
+void Server::callDataLogic(std::string clientID, float fuel, time_t timeReceived) {
+
+    ClientRecord& clientsRecord = this->recorder.at(clientID);
+
+    clientsRecord.updateAverageFuel(fuel);
+    clientsRecord.setTimeLastSeen(timeReceived);
+
+}
+
+void Server::addRecorderToClient(std::string clientID, std::string planeFileName, time_t connectionTime) {
+
+    this->recorder.emplace(clientID, ClientRecord(clientID, planeFileName, connectionTime));
+    //char* clientID, char* planeFileName, time_t lastSeen, float initFuel
 }
 void Server::updateActiveClient(std::string clientID, time_t lastReceivedPacket) {
     
     // Add the currect client id to activeClients
     this->activeClients[clientID] = lastReceivedPacket;
 
+}
+
+time_t Server::convertStringToTime(std::string parsedTime, std::string parsedDate) {
+    std::tm timeStruct = {};
+
+    // Parse date: m_d_yyyy
+    int month, day, year;
+    char sep1, sep2;
+    std::istringstream dateStream(parsedDate);
+    dateStream >> month >> sep1 >> day >> sep2 >> year;
+
+    // Parse time: hh:mm:ss
+    int hour, min, sec;
+    char c1, c2;
+    std::istringstream timeStream(parsedTime);
+    timeStream >> hour >> c1 >> min >> c2 >> sec;
+
+    // Fill tm struct
+    timeStruct.tm_year = year - 1900;  // years since 1900
+    timeStruct.tm_mon = month - 1;     // months since January (0–11)
+    timeStruct.tm_mday = day;
+
+    timeStruct.tm_hour = hour;
+    timeStruct.tm_min = min;
+    timeStruct.tm_sec = sec;
+
+   // timeStruct.tm_isdst = -1; // let system determine DST
+
+    // Convert to time_t (local time)
+    return mktime(&timeStruct);
 }
 
