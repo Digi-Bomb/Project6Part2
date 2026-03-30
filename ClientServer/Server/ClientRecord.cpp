@@ -27,6 +27,9 @@ int ClientRecord::getFuelSumCounter(){
     return this->fuelSumCounter;
 }
 
+std::string ClientRecord::getFlightName() {
+    return this->planeFileName;
+}
 
 std::string ClientRecord::getClientID() {
     return this->clientID;
@@ -73,13 +76,13 @@ void ClientRecord::updateAverageFuel(float fuel){
     else 
         this->currentAverageFuel = (getAverageFuel() + fuel) / getFuelSumCounter();
     
-    std::cout << "Current Average Fuel Level: " << this->currentAverageFuel << std::endl;
+    //std::cout << "Current Average Fuel Level: " << this->currentAverageFuel << std::endl;
 
     char result[26];
     ctime_s(result, sizeof(result), &(this->lastSeen));
-    std::cout << "Last time: " << result << std::endl;
+    //std::cout << "Last time: " << result << std::endl;
     updateFuelSumCounter();
-    std::cout << "After Fuel Sum: " << this->fuelSumCounter << std::endl;
+    //std::cout << "After Fuel Sum: " << this->fuelSumCounter << std::endl;
 }
 
 

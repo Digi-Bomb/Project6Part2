@@ -23,6 +23,7 @@ public:
     void setFuel(float firstPacketFuel); //Truly only needed for initial fuel setting
     
     std::string getClientID();
+    std::string getFlightName();
     time_t getLastSeen();
     float getCurAvgFuel();
     int getFuelSum();

@@ -4,11 +4,11 @@
 
 DataLogging::~DataLogging() {}
 
-void DataLogic(char *path)
+void DataLogging::DataLogic(char *path)
 {
 }
 
-void logConnection(char *clientID, float weight, float avg){
+void DataLogging::logConnection(char *clientID, float weight, float avg){
     std::ofstream file("connection.log", std::ios::app);
 
     if (!file) {
@@ -23,7 +23,7 @@ void logConnection(char *clientID, float weight, float avg){
     file.close();
 }
 
-void logData(char *clientID, float weight, float avg, char *planeFileName){
+void DataLogging::logData(char *clientID, float weight, float avg, char *planeFileName){
     std::ofstream file(planeFileName, std::ios::app);
 
     if (!file) {
@@ -38,7 +38,7 @@ void logData(char *clientID, float weight, float avg, char *planeFileName){
     file.close();
 }
 
-void logEOF(char *clientID, float avg, char *planeFileName){
+void DataLogging::logEOF(std::string clientID, float avg, std::string planeFileName){
     std::ofstream file(planeFileName, std::ios::app);
 
     if (!file) {
@@ -52,7 +52,7 @@ void logEOF(char *clientID, float avg, char *planeFileName){
     file.close();
 }
 
-void logError(char *clientID, char *error){
+void DataLogging::logError(char *clientID, char *error){
     std::ofstream file("error.log", std::ios::app);
 
     if (!file) {
