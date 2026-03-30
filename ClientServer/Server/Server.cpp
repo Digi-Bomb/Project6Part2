@@ -17,8 +17,12 @@ int main()
 {
     Server ser = Server();
     //TO DO: Initiate background processes here (checking each minute for last received message from each Client)
+    std::thread backgroundConnectionCleaner(&Server::validateConnections, &ser);
     ser.beginServerConnections();
     
+    backgroundConnectionCleaner.join();
+
+    return 0;
 }
 
 Server::~Server() {}
@@ -182,7 +186,7 @@ void Server::receiveConnections(char* buffer, int clientLength, int bytesReceive
 
 
         // Debugging print
-        std::cout << "date: " << unconverted_date << ", time: " << unconverted_time << ", fuel: " << unconverted_fuel << std::endl;
+        //std::cout << "date: " << unconverted_date << ", time: " << unconverted_time << ", fuel: " << unconverted_fuel << std::endl;
 
         float fuel = std::stof(unconverted_fuel);
         time_t parsedTime(convertStringToTime(unconverted_time, unconverted_date));
@@ -251,4 +255,52 @@ time_t Server::convertStringToTime(std::string parsedTime, std::string parsedDat
     // Convert to time_t (local time)
     return mktime(&timeStruct);
 }
+
+void Server::logFinalData(std::string clientID) {
+
+    ClientRecord& clientsRecord = this->recorder.at(clientID);
+
+    float finalAvg = clientsRecord.getAverageFuel();
+    std::string flightName = clientsRecord.getFlightName();
+
+    this->dataLoggr.logEOF(clientID, finalAvg, flightName);
+
+}
+
+// Asynchronous function that runs every minute, validating that there are no dead clients in the mapper.
+void Server::validateConnections() {
+    
+    auto nextRun = std::chrono::steady_clock::now();
+   
+    bool test = true;
+
+    while (test) {
+
+        nextRun += std::chrono::minutes(1);
+        std::time_t now = std::time(nullptr);
+
+        for (auto it = activeClients.begin(); it != activeClients.end();) {
+            const std::string& client = it->first;
+            std::time_t lastSeen = it->second;
+
+            double diff = std::difftime(now, lastSeen);
+
+            std::cout << "last_seen: " << lastSeen << std::endl;
+            std::cout << "diff: " << diff << std::endl;
+            std::cout << "now: " << now << std::endl;
+
+            if (diff >= 300) {// 5 Minutes (?) of inactivity means we've lost a client
+                it = activeClients.erase(it); 
+            }
+
+            else {
+                ++it;  // only increment if not erased
+            }
+        }
+        std::this_thread::sleep_until(nextRun);
+        
+    }
+        
+    }
+
 
