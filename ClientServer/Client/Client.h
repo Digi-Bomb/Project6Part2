@@ -13,7 +13,7 @@ private:
     char* serverIP;
     int serverPort;
 
-    char clientID[10];
+    char clientID[37];
     FileReader* fileReader;
 
 public:

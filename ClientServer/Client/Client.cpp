@@ -1,3 +1,4 @@
+#define NOMINMAX  // Prevent Windows headers from defining min/max macros
 #include <windows.networking.sockets.h>
 #pragma comment(lib, "Ws2_32.lib")
 
@@ -10,40 +11,47 @@
 
 #include <direct.h>
 
+#undef small  // Windows headers define 'small' as a macro which conflicts with Boost
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
-int main()
+char* generateID()
 {
-    // TODO: Colin get ip/port/filename from bash/command line
-    //Client cli = Client("ip", 0, "filename", generateId()); 
-  
-    //Makeshift/In-place random ID generation (simulates 10 clients)
-    //for (int i = 0; i < 10; i++) {
-   
-        int client_id = rand() % 100;
-        char clientid[16];
-        sprintf_s(clientid, sizeof(clientid), "CLIENT%d", client_id);
-        std::cout << "generated id: " << clientid << std::endl;
-        Client cli = Client("127.0.0.1", 6767, "..\\..\\DataFiles\\katl-kefd-B737-700.txt", clientid);
-        cli.run();
-   // }
+    boost::uuids::random_generator gen;
+    boost::uuids::uuid id = gen();
+    std::string uuidStr = boost::uuids::to_string(id);
+
+    char* IDchar = new char[37];
+    strncpy_s(IDchar, 37, uuidStr.c_str(), 36);
+    IDchar[36] = '\0';
+    return IDchar;
+}
+
+int main(int argc, char* argv[])
+{
+
+	if (argc != 4) {
+        std::cerr << "Usage: " << argv[0] << " <server_ip> <server_port> <telemetry_file>" << std::endl;
+        return 1;
+    }
+
+    char* clientID = generateID();
+    Client cli = Client(argv[1], atoi(argv[2]), argv[3], clientID);
+    cli.run();
+    delete[] clientID;
    
     return 0;
     // clean up like calling destructors for Client and its fileReader are done here (including closing socket and handling file i/o stuff)
 }
 
-// TODO: to be implemented by Colin vvvvvvvv
-
-//char* generateId() 
-//{
-//    
-//}
 
 Client::Client(const char* ip, int port, const char* fileName, const char* id) {
     this->serverPort = port;
     this->serverIP = _strdup(ip);
 
-    strncpy_s(this->clientID, id, 9);
-    this->clientID[9] = '\0';
+    strncpy_s(this->clientID, sizeof(this->clientID), id, 36);
+    this->clientID[36] = '\0';
 
    
     this->fileReader = new FileReader(fileName);
@@ -103,8 +111,8 @@ int Client::getServerPort() const {
 
 void Client::setClientID(const char* id) {
     if (id) {
-        strncpy_s(this->clientID, id, 9);
-        this->clientID[9] = '\0';
+        strncpy_s(this->clientID, sizeof(this->clientID), id, 36);
+        this->clientID[36] = '\0';
     }
 }
 
@@ -142,7 +150,7 @@ void Client::run()
         // read line
         if (this->fileReader->readLine(line))
         {
-            if (line.find(skipPrefix) == 0) { // only if it’s at the very start
+            if (line.find(skipPrefix) == 0) { // only if itï¿½s at the very start
                 line = line.substr(skipPrefix.length());
             }
             // send telemetry data
@@ -195,7 +203,6 @@ bool Client::sendTelemetry(const std::string& data)
 
     if (bytesSent == SOCKET_ERROR) {
         std::cerr << "Telemetry failed to send: " << WSAGetLastError() << std::endl; // TODO: change to a log
-        delete[] buffer;
         return false;
     }
     //delete[] buffer;
