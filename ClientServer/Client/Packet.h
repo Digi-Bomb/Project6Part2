@@ -6,7 +6,7 @@ class Packet {
     struct Header {
         bool startFlag;           // True if SOF (Start of Flight)
         bool endFlag;             // True if EOF (End of Flight)
-        char clientID[10];        // Unique ID for the flight
+        std::string clientID;        // Unique ID for the flight
         unsigned int packetSize;  // Total size of body
     } Head;
     char* data;         // Telemetry data
@@ -14,7 +14,7 @@ class Packet {
     char* txBuffer;
 
 public:
-    // Default Constructor
+	// Default Constructor - is sizeof(Head) + packetSize + sizeof(crc) correct for total size of serialized packet? i dont think sizeof a class is always accurate
     Packet() : data(nullptr), txBuffer(nullptr), crc(0) { memset(&Head, 0, sizeof(Head)); };
 
     // Constructor used by Server to DESERIALIZE raw bytes from recvfrom()
@@ -44,10 +44,10 @@ public:
     // Getters and Setters
     void setStartFlag(bool val) { Head.startFlag = val; }
     void setEndFlag(bool val) { Head.endFlag = val; }
-    void setClientID(const char* id) { strncpy_s(Head.clientID, id, 9); }
+    void setClientID(const char* id) { Head.clientID; }
 
     char* getClientID() {
-        return Head.clientID;
+        //return Head.clientID;
     }
 
     bool getStartFlag() {
