@@ -153,7 +153,6 @@ bool Client::sendStartOfFile()
     Packet pkt;
     pkt.setStartFlag(true);
     pkt.setEndFlag(false);
-    pkt.setClientID(this->clientID);
 
     std::string info = (this->fileReader->getFilePath());
 	//std::cout << "The info being set is: " << info << std::endl;
@@ -177,7 +176,6 @@ bool Client::sendTelemetry(const std::string& data)
     Packet pkt;
     pkt.setStartFlag(false);
     pkt.setEndFlag(false);
-    pkt.setClientID(this->clientID);
 
     pkt.setData((char*)data.c_str(), (int)data.length());
 
@@ -201,7 +199,6 @@ bool Client::sendEndOfFile()
     Packet pkt;
     pkt.setStartFlag(false);
     pkt.setEndFlag(true);
-    pkt.setClientID(this->clientID);
 
     pkt.setData((char*)"", 0);
 
