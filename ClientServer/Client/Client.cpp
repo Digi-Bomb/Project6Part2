@@ -9,35 +9,42 @@
 #include "Client.h"
 
 #include <direct.h>
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <boost/uuid/uuid_io.hpp>
 
 
-int main(int argc, char* argv[])
+int main()
 {
-	if (argc != 4) {
-        std::cerr << "Usage: Client.exe <server_ip> <server_port> <file_path>" << std::endl;
-        return 1;
-    }
-    //Client cli = Client("ip", 0, "filename", generateId());   
-    
-	//initialize command line args, then create client
-
-
-	Client cli = Client(argv[1], std::atoi(argv[2]), argv[3]);
-    cli.run();
+    // TODO: Colin get ip/port/filename from bash/command line
+    //Client cli = Client("ip", 0, "filename", generateId()); 
+  
+    //Makeshift/In-place random ID generation (simulates 10 clients)
+    //for (int i = 0; i < 10; i++) {
+   
+        int client_id = rand() % 100;
+        char clientid[16];
+        sprintf_s(clientid, sizeof(clientid), "CLIENT%d", client_id);
+        std::cout << "generated id: " << clientid << std::endl;
+        Client cli = Client("127.0.0.1", 6767, "..\\..\\DataFiles\\katl-kefd-B737-700.txt", clientid);
+        cli.run();
+   // }
    
     return 0;
     // clean up like calling destructors for Client and its fileReader are done here (including closing socket and handling file i/o stuff)
 }
 
-Client::Client(const char* ip, int port, const char* fileName) {
+// TODO: to be implemented by Colin vvvvvvvv
+
+//char* generateId() 
+//{
+//    
+//}
+
+Client::Client(const char* ip, int port, const char* fileName, const char* id) {
     this->serverPort = port;
     this->serverIP = _strdup(ip);
 
-	//clientID is generated
-    this->clientID = generateClientID();
+    strncpy_s(this->clientID, id, 9);
+    this->clientID[9] = '\0';
+
    
     this->fileReader = new FileReader(fileName);
     if (!this->fileReader->openFile()) {
@@ -82,17 +89,9 @@ Client::~Client()
     WSACleanup();
 }
 
-const std::string Client::getClientID() const {
+const char* Client::getClientID() const {
     return this->clientID;
 }
-
-std::string Client::generateClientID()
-{
-    boost::uuids::random_generator gen;
-    boost::uuids::uuid id = gen();
-    return boost::uuids::to_string(id);
-}
-
 
 const char* Client::getServerIP() const {
     return this->serverIP;
@@ -100,6 +99,13 @@ const char* Client::getServerIP() const {
 
 int Client::getServerPort() const {
     return this->serverPort;
+}
+
+void Client::setClientID(const char* id) {
+    if (id) {
+        strncpy_s(this->clientID, id, 9);
+        this->clientID[9] = '\0';
+    }
 }
 
 void Client::setServerIP(const char* ip) {
@@ -151,6 +157,7 @@ void Client::run()
 bool Client::sendStartOfFile()
 {
     Packet pkt;
+    pkt.setClientID(this->clientID);
     pkt.setStartFlag(true);
     pkt.setEndFlag(false);
 
@@ -174,6 +181,7 @@ bool Client::sendStartOfFile()
 bool Client::sendTelemetry(const std::string& data)
 {
     Packet pkt;
+    pkt.setClientID(this->clientID);
     pkt.setStartFlag(false);
     pkt.setEndFlag(false);
 
@@ -197,6 +205,7 @@ bool Client::sendTelemetry(const std::string& data)
 bool Client::sendEndOfFile()
 {
     Packet pkt;
+    pkt.setClientID(this->clientID);
     pkt.setStartFlag(false);
     pkt.setEndFlag(true);
 

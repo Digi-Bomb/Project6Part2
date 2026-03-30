@@ -13,20 +13,18 @@ private:
     char* serverIP;
     int serverPort;
 
-	std::string clientID;
+    char clientID[10];
     FileReader* fileReader;
 
 public:
-    Client(const char* ip, int port, const char* fileName);
+    Client(const char* ip, int port, const char* fileName, const char* id);
     ~Client();
+    const char* getClientID() const;
     const char* getServerIP() const;
     int getServerPort() const;
+    void setClientID(const char* id);
     void setServerIP(const char* ip);
     void setServerPort(int port);
-
-    const std::string getClientID() const;
-    static std::string generateClientID();
-
     void run();
     bool sendStartOfFile();
     bool sendTelemetry(const std::string& data);
