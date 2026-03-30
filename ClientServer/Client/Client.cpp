@@ -10,42 +10,35 @@
 
 #include <direct.h>
 
-
-int main()
+// TODO: to be implemented by Colin
+char* generateId()
 {
-    // TODO: Colin get ip/port/filename from bash/command line
-    //Client cli = Client("ip", 0, "filename", generateId()); 
-  
-    //Makeshift/In-place random ID generation (simulates 10 clients)
-    //for (int i = 0; i < 10; i++) {
-   
-        int client_id = rand() % 100;
-        char clientid[16];
-        sprintf_s(clientid, sizeof(clientid), "CLIENT%d", client_id);
-        std::cout << "generated id: " << clientid << std::endl;
-        Client cli = Client("127.0.0.1", 6767, "..\\..\\DataFiles\\katl-kefd-B737-700.txt", clientid);
-        cli.run();
-   // }
-   
+    return nullptr;
+}
+
+int main(int argc, char* argv[])
+{
+    const char* ip = argv[1];
+    int port = std::stoi(argv[2]);
+    std::string fullPathStr = "..\\..\\DataFiles\\" + std::string(argv[3]);
+    const char* filePath = fullPathStr.c_str();
+    const char* id = generateId();
+    Client cli = Client(ip, port, filePath, id);
+
     return 0;
     // clean up like calling destructors for Client and its fileReader are done here (including closing socket and handling file i/o stuff)
 }
 
-// TODO: to be implemented by Colin vvvvvvvv
 
-//char* generateId() 
-//{
-//    
-//}
 
 Client::Client(const char* ip, int port, const char* fileName, const char* id) {
     this->serverPort = port;
     this->serverIP = _strdup(ip);
 
-    strncpy_s(this->clientID, id, 9);
-    this->clientID[9] = '\0';
+    strncpy_s(this->clientID, id, 35);
+    this->clientID[35] = '\0';
 
-   
+
     this->fileReader = new FileReader(fileName);
     if (!this->fileReader->openFile()) {
         std::cerr << "Error: Could not open telemetry file " << fileName << std::endl; // TODO: change to a log
@@ -130,15 +123,15 @@ void Client::run()
     {
         std::cerr << "Unable to open file" << std::endl; // TODO: change to a log
     }
-   
+
     //// send SOF is the only tested function, but others should work
     this->sendStartOfFile();
-    
+
     while (!this->fileReader->isEOF())
     {
-       
+
         std::string line;
-       
+
         // read line
         if (this->fileReader->readLine(line))
         {
@@ -162,11 +155,11 @@ bool Client::sendStartOfFile()
     pkt.setEndFlag(false);
 
     std::string info = (this->fileReader->getFilePath());
-	//std::cout << "The info being set is: " << info << std::endl;
+    //std::cout << "The info being set is: " << info << std::endl;
     pkt.setData((char*)info.c_str(), (int)info.length());
 
     int totalSize = 0;
-   
+
 
     char* buffer = pkt.serialize(totalSize);
 
