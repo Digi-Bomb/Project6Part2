@@ -10,33 +10,51 @@
 
 #include <direct.h>
 
+//import boost headers
+//change clientID char size to 36/37
+//implement generateID and string to char* conversion for clientID
+//get cmd line args for ip/port/filename and pass to Client constructor in main
+//fix fuel calculation
+//add documentation
+//write out test plans
 
-int main()
+char* generateID() 
+{
+    boost::generateUUID();
+
+	//stringtochar conversion
+    return IDchar;
+}
+
+int main(int argc, char* argv[])
 {
     // TODO: Colin get ip/port/filename from bash/command line
     //Client cli = Client("ip", 0, "filename", generateId()); 
+
+	if (argc != 4) {
+        std::cerr << "Usage: " << argv[0] << " <server_ip> <server_port> <telemetry_file>" << std::endl;
+        return 1;
+    }
   
-    //Makeshift/In-place random ID generation (simulates 10 clients)
-    //for (int i = 0; i < 10; i++) {
    
-        int client_id = rand() % 100;
-        char clientid[16];
-        sprintf_s(clientid, sizeof(clientid), "CLIENT%d", client_id);
-        std::cout << "generated id: " << clientid << std::endl;
-        Client cli = Client("127.0.0.1", 6767, "..\\..\\DataFiles\\katl-kefd-B737-700.txt", clientid);
-        cli.run();
-   // }
+        //int client_id = rand() % 100;
+        //char clientid[16];
+        //sprintf_s(clientid, sizeof(clientid), "CLIENT%d", client_id);
+        //std::cout << "generated id: " << clientid << std::endl;
+        //Client cli = Client("127.0.0.1", 6767, "..\\..\\DataFiles\\katl-kefd-B737-700.txt", clientid);
+
+    //create id then call client, or call client gen in constructor?
+
+	char* clientID = new char[37]; // 36 chars for UUID + null terminator
+
+    
+    Client cli = Client(argv[1], atoi(argv[2]), argv[3], generateID());
+    cli.run();
    
     return 0;
     // clean up like calling destructors for Client and its fileReader are done here (including closing socket and handling file i/o stuff)
 }
 
-// TODO: to be implemented by Colin vvvvvvvv
-
-//char* generateId() 
-//{
-//    
-//}
 
 Client::Client(const char* ip, int port, const char* fileName, const char* id) {
     this->serverPort = port;
