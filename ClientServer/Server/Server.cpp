@@ -6,6 +6,10 @@
 #include <sstream>
 #include <iomanip>
 
+#include <boost/asio/thread_pool.hpp>
+#include <boost/asio/post.hpp>
+
+boost::asio::thread_pool serverPool(30); // 32 threads
 
 // Static values for pointer arithmetic
 #define HEADER_SIZE 16
@@ -18,6 +22,7 @@ int main()
     Server ser = Server();
     //TO DO: Initiate background processes here (checking each minute for last received message from each Client)
     std::thread backgroundConnectionCleaner(&Server::validateConnections, &ser);
+
     ser.beginServerConnections();
     
     backgroundConnectionCleaner.join();
@@ -77,6 +82,7 @@ void Server::beginServerConnections() {
             &clientLen
         );
 
+
         // Handle socket errors
         if (bytesReceived == SOCKET_ERROR) {
             std::cerr << "recvfrom failed\n";
@@ -92,7 +98,11 @@ void Server::beginServerConnections() {
         
         else if (bytesReceived) {
             //Anytime there is a receive, the server needs to handle transmissed data
-            receiveConnections(buffer, clientLen, bytesReceived);
+            auto bufferCopy = std::make_shared<std::vector<char>>(buffer, buffer + bytesReceived);
+
+            boost::asio::post(serverPool, [this, bufferCopy, clientLen, bytesReceived]() {
+                this->receiveConnections(bufferCopy->data(), clientLen, bytesReceived);
+                });
 
             // Print active clients list:
             /*std::cout << "Active clients:\n";
