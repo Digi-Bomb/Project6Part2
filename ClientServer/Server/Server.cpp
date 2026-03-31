@@ -136,12 +136,19 @@ void Server::receiveConnections(char* buffer, int clientLength, int bytesReceive
 
         updateActiveClient(clientID, timeNow); //Set mapping table entry to client ID
         addRecorderToClient(clientID, flightFile, timeNow);
+        float initialFuel = 0.0f; // you may not have it yet
+        this->dataLoggr.logConnection(
+            (char*)clientID.c_str(),
+            initialFuel,
+            0.0f
+        ); // magic number 0.0f cuz i need to talk to benneth
 
     }
 
     if (cur->getEndFlag()) {
         std::cout << "This is an end of flight packet: " << std::endl;
 
+        logFinalData(clientID);
         this->activeClients.erase(clientID);
 
     }
@@ -209,8 +216,17 @@ void Server::callDataLogic(std::string clientID, float fuel, time_t timeReceived
 
     ClientRecord& clientsRecord = this->recorder.at(clientID);
 
-    clientsRecord.updateAverageFuel(fuel);
+    // Update consumption
+    clientsRecord.updateFuelConsumption(fuel);
+
     clientsRecord.setTimeLastSeen(timeReceived);
+
+    this->dataLoggr.logData(
+        (char*)clientID.c_str(),
+        fuel,
+        clientsRecord.getCurrentConsumption(),
+        (char*)clientsRecord.getFlightName().c_str()
+    );
 
 }
 
@@ -260,10 +276,10 @@ void Server::logFinalData(std::string clientID) {
 
     ClientRecord& clientsRecord = this->recorder.at(clientID);
 
-    float finalAvg = clientsRecord.getAverageFuel();
+    float finalConsumption = clientsRecord.getCurrentConsumption();
     std::string flightName = clientsRecord.getFlightName();
 
-    this->dataLoggr.logEOF(clientID, finalAvg, flightName);
+    this->dataLoggr.logEOF(clientID, finalConsumption, flightName);
 
 }
 

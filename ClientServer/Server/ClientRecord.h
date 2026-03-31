@@ -9,7 +9,10 @@ private:
     std::string planeFileName;
     time_t lastSeen;
     float currentAverageFuel;
+    float currentConsumption;
+    bool hasPrevious;
     int fuelSumCounter;
+    float lastFuel;
 
 public:
   
@@ -27,10 +30,10 @@ public:
     time_t getLastSeen();
     float getCurAvgFuel();
     int getFuelSum();
+    float getCurrentConsumption();
 
 
-    void updateAverageFuel(float fuel);
-    void updateFuelSumCounter();
+    void updateFuelConsumption(float fuel);
     float getAverageFuel();
     int getFuelSumCounter();
 };
