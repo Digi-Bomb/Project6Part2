@@ -8,7 +8,7 @@ void DataLogging::DataLogic(char *path)
 {
 }
 
-void DataLogging::logConnection(char *clientID, float weight, float avg){
+void DataLogging::logConnection(char *clientID, float fuel, float consumption){
     std::ofstream file("connection.log", std::ios::app);
 
     if (!file) {
@@ -17,13 +17,13 @@ void DataLogging::logConnection(char *clientID, float weight, float avg){
     }
 
     file << "[CONNECT] Client: " << clientID
-         << " | Weight: " << weight
-         << " | Avg: " << avg << std::endl;
+         << " | Fuel: " << fuel
+         << " | Average Consumption: " << consumption << std::endl;
 
     file.close();
 }
 
-void DataLogging::logData(char *clientID, float weight, float avg, char *planeFileName){
+void DataLogging::logData(char *clientID, float fuel, float consumption, char *planeFileName){
     std::ofstream file(planeFileName, std::ios::app);
 
     if (!file) {
@@ -32,13 +32,13 @@ void DataLogging::logData(char *clientID, float weight, float avg, char *planeFi
     }
 
     file << "[DATA] Client: " << clientID
-         << " | Weight: " << weight
-         << " | Avg: " << avg << std::endl;
+         << " | Fuel: " << fuel
+         << " | Consumption: " << consumption << std::endl;
 
     file.close();
 }
 
-void DataLogging::logEOF(std::string clientID, float avg, std::string planeFileName){
+void DataLogging::logEOF(std::string clientID, float consumption, std::string planeFileName){
     std::ofstream file(planeFileName, std::ios::app);
 
     if (!file) {
@@ -47,7 +47,7 @@ void DataLogging::logEOF(std::string clientID, float avg, std::string planeFileN
     }
 
     file << "[EOF] Client: " << clientID
-         << " | Final Avg: " << avg << std::endl;
+         << " | Final Consumption: " << consumption << std::endl;
 
     file.close();
 }
