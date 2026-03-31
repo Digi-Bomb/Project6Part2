@@ -9,6 +9,7 @@
 #include <boost/asio/thread_pool.hpp>
 #include <boost/asio/post.hpp>
 
+
 boost::asio::thread_pool serverPool(30); // 32 threads
 
 // Static values for pointer arithmetic
@@ -117,6 +118,7 @@ void Server::beginServerConnections() {
     }
 
     std::cout << "Final clients:\n";
+    std::shared_lock<std::shared_mutex> lock(activeClientsMutex);
     for (const auto& client : this->activeClients) {
         char timeStr[26];
         ctime_s(timeStr, sizeof(timeStr), &client.second);
@@ -152,8 +154,9 @@ void Server::receiveConnections(char* buffer, int clientLength, int bytesReceive
     if (cur->getEndFlag()) {
         std::cout << "This is an end of flight packet: " << std::endl;
 
+        std::unique_lock<std::shared_mutex> lock(activeClientsMutex);
         this->activeClients.erase(clientID);
-
+        lock.unlock();
     }
 
     //TO DO: handle and parse body data:
@@ -231,9 +234,10 @@ void Server::addRecorderToClient(std::string clientID, std::string planeFileName
 }
 void Server::updateActiveClient(std::string clientID, time_t lastReceivedPacket) {
     
+    std::unique_lock<std::shared_mutex> lock(activeClientsMutex);
     // Add the currect client id to activeClients
     this->activeClients[clientID] = lastReceivedPacket;
-
+    lock.unlock();
 }
 
 time_t Server::convertStringToTime(std::string parsedTime, std::string parsedDate) {
@@ -289,6 +293,7 @@ void Server::validateConnections() {
         nextRun += std::chrono::minutes(1);
         std::time_t now = std::time(nullptr);
 
+        std::unique_lock<std::shared_mutex> lock(activeClientsMutex);
         for (auto it = activeClients.begin(); it != activeClients.end();) {
             const std::string& client = it->first;
             std::time_t lastSeen = it->second;
@@ -299,7 +304,9 @@ void Server::validateConnections() {
             std::cout << "diff: " << diff << std::endl;
             std::cout << "now: " << now << std::endl;
 
+
             if (diff >= 300) {// 5 Minutes (?) of inactivity means we've lost a client
+                //std::unique_lock<std::shared_mutex> lock(activeClientsMutex);
                 it = activeClients.erase(it); 
             }
 
@@ -307,6 +314,7 @@ void Server::validateConnections() {
                 ++it;  // only increment if not erased
             }
         }
+        lock.unlock();
         std::this_thread::sleep_until(nextRun);
         
     }
