@@ -1,7 +1,8 @@
 #pragma once
 #define _CRT_SECURE_NO_WARNINGS
 
-#include <windows.networking.sockets.h>
+#include <winsock2.h>
+#include <ws2tcpip.h>
 #include <string>
 #include "Packet.h"
 #include <iostream>
