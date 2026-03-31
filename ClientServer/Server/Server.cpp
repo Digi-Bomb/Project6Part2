@@ -1,4 +1,4 @@
-#include <windows.networking.sockets.h>
+#pragma comment(lib, "Ws2_32.lib")
 #include <iostream>
 #include <string>
 #include "Server.h"
@@ -16,11 +16,9 @@ boost::asio::thread_pool serverPool(30); // 32 threads
 #define HEADER_SIZE 16
 #define TAIL_SIZE 4
 
-#pragma comment(lib, "Ws2_32.lib")
-
 int main()
 {
-    Server ser = Server();
+    Server ser;
     //TO DO: Initiate background processes here (checking each minute for last received message from each Client)
     std::thread backgroundConnectionCleaner(&Server::validateConnections, &ser);
 
