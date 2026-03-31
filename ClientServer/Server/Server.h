@@ -12,11 +12,13 @@
 #include <thread>
 #include <chrono>
 #include <atomic>
+#include <shared_mutex>
 
 class Server {
 private: 
     SOCKET serverSocket;
     std::map<std::string, std::time_t> activeClients; // Client and last received transmission
+    std::shared_mutex activeClientsMutex;
     std::map<std::string, ClientRecord> recorder; // Client and their recorder
     sockaddr_in serverAddr;
     sockaddr_in clientAddr;
