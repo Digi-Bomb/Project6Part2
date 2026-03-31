@@ -53,7 +53,6 @@ Client::Client(const char* ip, int port, const char* fileName, const char* id) {
     strncpy_s(this->clientID, sizeof(this->clientID), id, 36);
     this->clientID[36] = '\0';
 
-   
     this->fileReader = new FileReader(fileName);
     if (!this->fileReader->openFile()) {
         std::cerr << "Error: Could not open telemetry file " << fileName << std::endl; // TODO: change to a log
@@ -138,15 +137,15 @@ void Client::run()
     {
         std::cerr << "Unable to open file" << std::endl; // TODO: change to a log
     }
-   
+
     //// send SOF is the only tested function, but others should work
     this->sendStartOfFile();
-    
+
     while (!this->fileReader->isEOF())
     {
-       
+
         std::string line;
-       
+
         // read line
         if (this->fileReader->readLine(line))
         {
@@ -170,11 +169,11 @@ bool Client::sendStartOfFile()
     pkt.setEndFlag(false);
 
     std::string info = (this->fileReader->getFilePath());
-	//std::cout << "The info being set is: " << info << std::endl;
+    //std::cout << "The info being set is: " << info << std::endl;
     pkt.setData((char*)info.c_str(), (int)info.length());
 
     int totalSize = 0;
-   
+
 
     char* buffer = pkt.serialize(totalSize);
 

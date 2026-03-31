@@ -13,6 +13,10 @@ ClientRecord::ClientRecord(std::string clientID, std::string planeFileName, time
     this->currentAverageFuel = 0;
 
     this->fuelSumCounter = 0; 
+
+    this->currentConsumption = 0.0f;
+
+    this->hasPrevious = false;
 }
 
 //TODO: Need to build the desctructor (if we find memory issues)
@@ -64,25 +68,38 @@ void ClientRecord::setFuel(float firstPacketFuel) {
     this->currentAverageFuel = firstPacketFuel;
 }
 
-void ClientRecord::updateFuelSumCounter(){
-    this->fuelSumCounter++;
+float ClientRecord::getCurrentConsumption() {
+    return this->currentConsumption;
 }
 
-void ClientRecord::updateAverageFuel(float fuel){
 
-    if (this->fuelSumCounter == 0) 
-        this->currentAverageFuel = fuel;
-    
-    else 
-        this->currentAverageFuel = (getAverageFuel() + fuel) / getFuelSumCounter();
-    
-    //std::cout << "Current Average Fuel Level: " << this->currentAverageFuel << std::endl;
+void ClientRecord::updateFuelConsumption(float fuel){
+    if (hasPrevious) {
+        this->currentConsumption = this->lastFuel - fuel;
+
+        // prevent negative consumption
+        if (this->currentConsumption < 0) {
+            this->currentConsumption = 0;
+        }
+    }
+    else {
+        // first packet
+        this->currentConsumption = 0;
+        hasPrevious = true;
+    }
+
+    this->lastFuel = fuel;
+
+    // update timestamp
+    this->lastSeen = time(nullptr);
 
     char result[26];
     ctime_s(result, sizeof(result), &(this->lastSeen));
-    //std::cout << "Last time: " << result << std::endl;
-    updateFuelSumCounter();
-    //std::cout << "After Fuel Sum: " << this->fuelSumCounter << std::endl;
+
+    std::cout << "Current Fuel Consumption: "
+        << this->currentConsumption << std::endl;
+
+    std::cout << "Last time: " << result << std::endl;
 }
 
 
