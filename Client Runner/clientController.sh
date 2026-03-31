@@ -2,11 +2,11 @@
 # Client Controller Script
 # Clients need IP, port and filename or filepath as input
 
-program="./client.exe"
-files=("File_1" "File_2" "File_3")
+program=".\Client.exe"
+files=("katl-kefd-B737-700.txt" "Telem_2023_3_12 14_56_40.txt" "Telem_2023_3_12 16_26_4" "Telem_czba-cykf-pa28-w2_2023_3_1 12_31_27.txt")
 
 server_ip=192.168.1.1 #placeholder 
-server_port=67670
+server_port=6767
 
 num_clients=5
 
