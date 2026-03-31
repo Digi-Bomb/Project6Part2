@@ -6,7 +6,7 @@ class Packet {
     struct Header {
         bool startFlag;           // True if SOF (Start of Flight)
         bool endFlag;             // True if EOF (End of Flight)
-        char clientID[36];        // Unique ID for the flight
+        char clientID[37];        // Unique ID for the flight (UUID: 36 chars + null terminator)
         unsigned int packetSize;  // Total size of body
     } Head;
     char* data;         // Telemetry data
@@ -44,7 +44,7 @@ public:
     // Getters and Setters
     void setStartFlag(bool val) { Head.startFlag = val; }
     void setEndFlag(bool val) { Head.endFlag = val; }
-    void setClientID(const char* id) { strncpy_s(Head.clientID, id, 35); }
+    void setClientID(const char* id) { strncpy_s(Head.clientID, sizeof(Head.clientID), id, 36); }
 
     char* getClientID() {
         return Head.clientID;
