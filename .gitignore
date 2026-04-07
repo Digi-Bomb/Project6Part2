@@ -428,3 +428,29 @@ FodyWeavers.xsd
 *.msp
 .vs/ 
 /ClientServer/Server/katl-kefd-B737-700.txt
+
+# Build artifacts
+/build/
+/bin/
+/out/
+/Debug/
+/Release/
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+cmake-build-*/
+
+# vcpkg (if local install)
+vcpkg_installed/
+vcpkg/buildtrees/
+vcpkg/packages/
+
+# Visual Studio
+.vs/
+*.vcxproj.user
+*.suo
+
+# Logs / temp
+*.log
+*.tmp
