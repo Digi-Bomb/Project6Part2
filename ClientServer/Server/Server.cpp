@@ -1,338 +1,344 @@
-    #pragma comment(lib, "Ws2_32.lib")
+#pragma comment(lib, "Ws2_32.lib")
 
-    #include <boost/asio/thread_pool.hpp>
-    #include <boost/asio/post.hpp>
+#include <boost/asio/thread_pool.hpp>
+#include <boost/asio/post.hpp>
 
-    #include <windows.networking.sockets.h>
-    #include <iostream>
-    #include <string>
-    #include "Server.h"
-    #include <vector>
-    #include <sstream>
-    #include <iomanip>
+#define WIN32_LEAN_AND_MEAN
+#include <winsock2.h>
+#include <ws2tcpip.h>
 
-    boost::asio::thread_pool serverPool(30); // 32 threads
+#include <iostream>
+#include <string>
+#include <vector>
+#include <sstream>
+#include <iomanip>
+#include <thread>
+#include <chrono>
+#include <mutex>
+#include <memory>
+#include <ctime>
+#include <stdexcept>
 
-    // Static values for pointer arithmetic
-    #define HEADER_SIZE 16
-    #define TAIL_SIZE 4
+#include "Server.h"
 
-    int main()
-    {
-        Server ser;
-        //TO DO: Initiate background processes here (checking each minute for last received message from each Client)
-        std::thread backgroundConnectionCleaner(&Server::validateConnections, &ser);
+boost::asio::thread_pool serverPool(30);
 
-        ser.beginServerConnections();
-    
-        backgroundConnectionCleaner.join();
+// Protect recorder map access across worker threads
+static std::mutex recorderMutex;
 
-        return 0;
+int main()
+{
+    Server ser;
+
+    // TO DO: Initiate background processes here
+    std::thread backgroundConnectionCleaner(&Server::validateConnections, &ser);
+
+    ser.beginServerConnections();
+
+    backgroundConnectionCleaner.join();
+
+    return 0;
+}
+
+Server::~Server() {}
+
+void Server::beginServerConnections() {
+    WSADATA wsaData;
+
+    // Initialize Winsock
+    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+        std::cerr << "WSAStartup failed\n";
+        return;
     }
 
-    Server::~Server() {}
+    // Create UDP socket
+    this->serverSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    if (this->serverSocket == INVALID_SOCKET) {
+        std::cerr << "Socket creation failed\n";
+        WSACleanup();
+        return;
+    }
 
-    void Server::beginServerConnections() {
-        WSADATA wsaData;
+    // Set up server address
+    this->serverAddr.sin_family = AF_INET;
+    this->serverAddr.sin_port = htons(6767);
+    this->serverAddr.sin_addr.s_addr = INADDR_ANY;
 
-        // Initialize Winsock
-        if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
-            std::cerr << "WSAStartup failed\n";
-            return;
-        }
-
-        // Create UDP socket
-        this->serverSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-        if (this->serverSocket == INVALID_SOCKET) {
-            std::cerr << "Socket creation failed\n";
-            WSACleanup();
-            return;
-        }
-
-        // Set up server address
-        this->serverAddr.sin_family = AF_INET;
-        this->serverAddr.sin_port = htons(6767);
-        this->serverAddr.sin_addr.s_addr = INADDR_ANY; // accept from any client
-
-        // 4. Bind socket
-        if (bind(this->serverSocket, (sockaddr*)&this->serverAddr, sizeof(this->serverAddr)) == SOCKET_ERROR) {
-            std::cerr << "Bind failed\n";
-            closesocket(this->serverSocket);
-            WSACleanup();
-            return;
-        }
-
-        std::cout << "UDP Server listening on port 6767...\n";
-
-        //Create a local buffer variable for connection receival. Additionally track the length of the client address
-        char buffer[1024];
-        int clientLen = sizeof(this->clientAddr);
-
-   
-        // Ongoing Receive loop, infinite at the moment
-        while (true) {
-
-            // Receive a packet, storing the # of bytes received in a local variable
-            int bytesReceived = recvfrom(
-                this->serverSocket,
-                buffer,
-                sizeof(buffer),
-                0,
-                (sockaddr*)&this->clientAddr,
-                &clientLen
-            );
-
-
-            // Handle socket errors
-            if (bytesReceived == SOCKET_ERROR) {
-                std::cerr << "recvfrom failed\n";
-                continue;
-            }
-
-            // Make sure we received at least a header
-            if (bytesReceived < HEADER_SIZE) {
-                std::cerr << "Received packet too small!\n";
-                continue;
-            }
-       
-        
-            else if (bytesReceived) {
-                //Anytime there is a receive, the server needs to handle transmissed data
-                auto bufferCopy = std::make_shared<std::vector<char>>(buffer, buffer + bytesReceived);
-
-                boost::asio::post(serverPool, [this, bufferCopy, clientLen, bytesReceived]() {
-                    this->receiveConnections(bufferCopy->data(), clientLen, bytesReceived);
-                    });
-
-                // Print active clients list:
-                /*std::cout << "Active clients:\n";
-                for (const auto& client : this->activeClients) {
-                    char timeStr[26];
-                    ctime_s(timeStr, sizeof(timeStr), &client.second);
-                    std::cout << client.first << " last seen at: " << timeStr;
-                }*/
-            }
-       
-        
-        }
-
-        std::cout << "Final clients:\n";
-        std::shared_lock<std::shared_mutex> lock(activeClientsMutex);
-        for (const auto& client : this->activeClients) {
-            char timeStr[26];
-            ctime_s(timeStr, sizeof(timeStr), &client.second);
-            std::cout << client.first << " last seen at: " << timeStr;
-        }
-        // Cleanup (not yet reachable, but good practice)
+    // Bind socket
+    if (bind(this->serverSocket, (sockaddr*)&this->serverAddr, sizeof(this->serverAddr)) == SOCKET_ERROR) {
+        std::cerr << "Bind failed\n";
         closesocket(this->serverSocket);
         WSACleanup();
+        return;
     }
 
-    // Function that handles each received packet
-    // SOF: Adds client connection information to ActiveClients Mapper (local connection time and ID)
-    // EOF: Removes Client information from ActiveClients Mapper at the Client ID (No longer considered an Active Client)
-    // TELEMETRY PACKET: Deserializes packet and parses data (into date, time, and fuel level). Additionally sends this information to the Data Logic Module (along with the Client ID this is associated with)
-    void Server::receiveConnections(char* buffer, int clientLength, int bytesReceived) {
+    std::cout << "UDP Server listening on port 6767...\n";
 
-        Packet* cur = new Packet(buffer);;
-        std::string clientID(cur->getClientID());
-        time_t timeNow;
+    char buffer[1024];
+    int clientLen = sizeof(this->clientAddr);
 
-        if (cur->getStartFlag()) {
+    while (true) {
+        int bytesReceived = recvfrom(
+            this->serverSocket,
+            buffer,
+            sizeof(buffer),
+            0,
+            (sockaddr*)&this->clientAddr,
+            &clientLen
+        );
 
+        if (bytesReceived == SOCKET_ERROR) {
+            std::cerr << "recvfrom failed\n";
+            continue;
+        }
+
+        // Minimum valid packet = header + CRC tail
+        if (bytesReceived < static_cast<int>(Packet::getHeaderSize() + Packet::getTailSize())) {
+            std::cerr << "Received packet too small!\n";
+            continue;
+        }
+
+        if (bytesReceived > 0) {
+            auto bufferCopy = std::make_shared<std::vector<char>>(buffer, buffer + bytesReceived);
+
+            boost::asio::post(serverPool, [this, bufferCopy, clientLen, bytesReceived]() {
+                this->receiveConnections(bufferCopy->data(), clientLen, bytesReceived);
+                });
+        }
+    }
+
+    // Unreachable for now, but kept for completeness
+    std::cout << "Final clients:\n";
+    std::shared_lock<std::shared_mutex> lock(activeClientsMutex);
+    for (const auto& client : this->activeClients) {
+        char timeStr[26];
+        ctime_s(timeStr, sizeof(timeStr), &client.second);
+        std::cout << client.first << " last seen at: " << timeStr;
+    }
+
+    closesocket(this->serverSocket);
+    WSACleanup();
+}
+
+// Function that handles each received packet
+void Server::receiveConnections(char* buffer, int clientLength, int bytesReceived) {
+    (void)clientLength; // unused right now
+
+    try {
+        Packet cur(buffer, bytesReceived);
+        std::string clientID(cur.getClientID());
+        time_t timeNow{};
+
+        if (cur.getStartFlag()) {
             std::cout << "Received Client: " << clientID << std::endl;
-            std::string flightFile(cur->getTelemetryData());
-        
+            std::string flightFile(cur.getTelemetryData());
+
             time(&timeNow);
 
-            updateActiveClient(clientID, timeNow); //Set mapping table entry to client ID
+            updateActiveClient(clientID, timeNow);
             addRecorderToClient(clientID, flightFile, timeNow);
-            float initialFuel = 0.0f; // you may not have it yet
+
+            float initialFuel = 0.0f;
             this->dataLoggr.logConnection(
                 (char*)clientID.c_str(),
                 initialFuel,
                 0.0f
-            ); // magic number 0.0f cuz i need to talk to benneth
-
+            );
         }
+        else if (cur.getEndFlag()) {
+            std::cout << "This is an end of flight packet: " << clientID << std::endl;
 
-        if (cur->getEndFlag()) {
-            std::cout << "This is an end of flight packet: " << std::endl;
+            logFinalData(clientID);
 
             std::unique_lock<std::shared_mutex> lock(activeClientsMutex);
             this->activeClients.erase(clientID);
-            lock.unlock();
         }
-
-        //TO DO: handle and parse body data:
-        else if(!cur->getEndFlag() && !cur->getStartFlag() ){
-        
+        else {
             time(&timeNow);
             updateActiveClient(clientID, timeNow);
-            // Initialize variables for local storage
+
             std::vector<std::string> bodyParts;
-            std::string part, unconverted_date, unconverted_time, unconverted_fuel;
+            std::string part;
+            std::string unconverted_date;
+            std::string unconverted_time;
+            std::string unconverted_fuel;
 
-            // Determine the size of the received data, and obtain the data seperately.
-            int CurBodySize = bytesReceived - HEADER_SIZE - TAIL_SIZE;
-            char* curBodyData = cur->getTelemetryData();
-
-            std::string bodyData(curBodyData, CurBodySize);
+            // Use packet's own parsed body size, not hardcoded math
+            std::string bodyData(cur.getTelemetryData(), cur.getPacketSize());
             std::stringstream ss(bodyData);
 
-            // Iterate through the received data, parsing by ',' delimeters. Add each subsection to the local Vector
             while (std::getline(ss, part, ',')) {
                 bodyParts.push_back(part);
             }
-        
-            // Determine the position within the string of the first space (because the date in these files is not comma-seperated from the time
-            size_t spacePos = bodyParts[0].find(" ");
 
-            // Only if a space exists, parse the data
+            if (bodyParts.size() < 2) {
+                std::cerr << "Malformed telemetry packet from client "
+                    << clientID << " (fields=" << bodyParts.size() << ")\n";
+                return;
+            }
+
+            size_t spacePos = bodyParts[0].find(' ');
+
             if (spacePos != std::string::npos) {
                 unconverted_date = bodyParts[0].substr(0, spacePos);
                 unconverted_time = bodyParts[0].substr(spacePos + 1);
             }
-
             else {
                 unconverted_date = bodyParts[0];
                 unconverted_time = "";
             }
 
-            // Store the fuel value
             unconverted_fuel = bodyParts[1];
 
-
-            // Debugging print
-            //std::cout << "date: " << unconverted_date << ", time: " << unconverted_time << ", fuel: " << unconverted_fuel << std::endl;
-
-            float fuel = std::stof(unconverted_fuel);
-            time_t parsedTime(convertStringToTime(unconverted_time, unconverted_date));
-        
-            callDataLogic(clientID, fuel, parsedTime);
-        
-            // TO DO: Call Data Logic Module!!!!!
-       
-        }
-
-    }
-
-    ClientRecord Server::getClientsRecorder(std::string clientID) {
-
-        return this->recorder.at(clientID);
-    
-    };
-
-    void Server::callDataLogic(std::string clientID, float fuel, time_t timeReceived) {
-
-        ClientRecord& clientsRecord = this->recorder.at(clientID);
-
-        // Update consumption
-        clientsRecord.updateFuelConsumption(fuel);
-
-        clientsRecord.setTimeLastSeen(timeReceived);
-
-        this->dataLoggr.logData(
-            (char*)clientID.c_str(),
-            fuel,
-            clientsRecord.getCurrentConsumption(),
-            (char*)clientsRecord.getFlightName().c_str()
-        );
-
-    }
-
-    void Server::addRecorderToClient(std::string clientID, std::string planeFileName, time_t connectionTime) {
-
-        this->recorder.emplace(clientID, ClientRecord(clientID, planeFileName, connectionTime));
-        //char* clientID, char* planeFileName, time_t lastSeen, float initFuel
-    }
-    void Server::updateActiveClient(std::string clientID, time_t lastReceivedPacket) {
-    
-        std::unique_lock<std::shared_mutex> lock(activeClientsMutex);
-        // Add the currect client id to activeClients
-        this->activeClients[clientID] = lastReceivedPacket;
-        lock.unlock();
-    }
-
-    time_t Server::convertStringToTime(std::string parsedTime, std::string parsedDate) {
-        std::tm timeStruct = {};
-
-        // Parse date: m_d_yyyy
-        int month, day, year;
-        char sep1, sep2;
-        std::istringstream dateStream(parsedDate);
-        dateStream >> month >> sep1 >> day >> sep2 >> year;
-
-        // Parse time: hh:mm:ss
-        int hour, min, sec;
-        char c1, c2;
-        std::istringstream timeStream(parsedTime);
-        timeStream >> hour >> c1 >> min >> c2 >> sec;
-
-        // Fill tm struct
-        timeStruct.tm_year = year - 1900;  // years since 1900
-        timeStruct.tm_mon = month - 1;     // months since January (0�11)
-        timeStruct.tm_mday = day;
-
-        timeStruct.tm_hour = hour;
-        timeStruct.tm_min = min;
-        timeStruct.tm_sec = sec;
-
-       // timeStruct.tm_isdst = -1; // let system determine DST
-
-        // Convert to time_t (local time)
-        return mktime(&timeStruct);
-    }
-
-    void Server::logFinalData(std::string clientID) {
-
-        ClientRecord& clientsRecord = this->recorder.at(clientID);
-
-        float finalConsumption = clientsRecord.getCurrentConsumption();
-        std::string flightName = clientsRecord.getFlightName();
-
-        this->dataLoggr.logEOF(clientID, finalConsumption, flightName);
-
-    }
-
-    // Asynchronous function that runs every minute, validating that there are no dead clients in the mapper.
-    void Server::validateConnections() {
-    
-        auto nextRun = std::chrono::steady_clock::now();
-   
-        bool test = true;
-
-        while (test) {
-
-            nextRun += std::chrono::minutes(1);
-            std::time_t now = std::time(nullptr);
-
-            std::unique_lock<std::shared_mutex> lock(activeClientsMutex);
-            for (auto it = activeClients.begin(); it != activeClients.end();) {
-                const std::string& client = it->first;
-                std::time_t lastSeen = it->second;
-
-                double diff = std::difftime(now, lastSeen);
-
-                std::cout << "last_seen: " << lastSeen << std::endl;
-                std::cout << "diff: " << diff << std::endl;
-                std::cout << "now: " << now << std::endl;
-
-
-                if (diff >= 300) {// 5 Minutes (?) of inactivity means we've lost a client
-                    //std::unique_lock<std::shared_mutex> lock(activeClientsMutex);
-                    it = activeClients.erase(it); 
-                }
-
-                else {
-                    ++it;  // only increment if not erased
-                }
+            float fuel = 0.0f;
+            try {
+                fuel = std::stof(unconverted_fuel);
             }
-            lock.unlock();
-            std::this_thread::sleep_until(nextRun);
-        
+            catch (const std::exception&) {
+                std::cerr << "Invalid fuel value from client " << clientID
+                    << ": " << unconverted_fuel << '\n';
+                return;
+            }
+
+            time_t parsedTime = convertStringToTime(unconverted_time, unconverted_date);
+            callDataLogic(clientID, fuel, parsedTime);
         }
-        
+    }
+    catch (const std::out_of_range& e) {
+        std::cerr << "Out-of-range while processing packet: " << e.what() << '\n';
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Exception while processing packet: " << e.what() << '\n';
+    }
+    catch (...) {
+        std::cerr << "Unknown exception while processing packet.\n";
+    }
+}
+
+ClientRecord Server::getClientsRecorder(std::string clientID) {
+    std::lock_guard<std::mutex> lock(recorderMutex);
+
+    auto it = this->recorder.find(clientID);
+    if (it == this->recorder.end()) {
+        throw std::out_of_range("Client recorder not found for clientID: " + clientID);
+    }
+
+    return it->second;
+}
+
+void Server::callDataLogic(std::string clientID, float fuel, time_t timeReceived) {
+    std::lock_guard<std::mutex> lock(recorderMutex);
+
+    auto it = this->recorder.find(clientID);
+    if (it == this->recorder.end()) {
+        std::cerr << "Recorder entry missing for client " << clientID << '\n';
+        return;
+    }
+
+    ClientRecord& clientsRecord = it->second;
+
+    clientsRecord.updateFuelConsumption(fuel);
+    clientsRecord.setTimeLastSeen(timeReceived);
+
+    this->dataLoggr.logData(
+        (char*)clientID.c_str(),
+        fuel,
+        clientsRecord.getCurrentConsumption(),
+        (char*)clientsRecord.getFlightName().c_str()
+    );
+}
+
+void Server::addRecorderToClient(std::string clientID, std::string planeFileName, time_t connectionTime) {
+    std::lock_guard<std::mutex> lock(recorderMutex);
+
+    auto it = this->recorder.find(clientID);
+    if (it == this->recorder.end()) {
+        this->recorder.emplace(clientID, ClientRecord(clientID, planeFileName, connectionTime));
+    }
+    else {
+        // Refresh an existing record if a duplicate SOF arrives
+        it->second.setPlaneFlightName(planeFileName);
+        it->second.setTimeLastSeen(connectionTime);
+    }
+}
+
+void Server::updateActiveClient(std::string clientID, time_t lastReceivedPacket) {
+    std::unique_lock<std::shared_mutex> lock(activeClientsMutex);
+    this->activeClients[clientID] = lastReceivedPacket;
+}
+
+time_t Server::convertStringToTime(std::string parsedTime, std::string parsedDate) {
+    std::tm timeStruct = {};
+
+    int month = 0, day = 0, year = 0;
+    char sep1 = '\0', sep2 = '\0';
+    std::istringstream dateStream(parsedDate);
+    dateStream >> month >> sep1 >> day >> sep2 >> year;
+
+    int hour = 0, min = 0, sec = 0;
+    char c1 = '\0', c2 = '\0';
+    std::istringstream timeStream(parsedTime);
+
+    if (!parsedTime.empty()) {
+        timeStream >> hour >> c1 >> min >> c2 >> sec;
+    }
+
+    timeStruct.tm_year = year - 1900;
+    timeStruct.tm_mon = month - 1;
+    timeStruct.tm_mday = day;
+
+    timeStruct.tm_hour = hour;
+    timeStruct.tm_min = min;
+    timeStruct.tm_sec = sec;
+
+    return mktime(&timeStruct);
+}
+
+void Server::logFinalData(std::string clientID) {
+    std::lock_guard<std::mutex> lock(recorderMutex);
+
+    auto it = this->recorder.find(clientID);
+    if (it == this->recorder.end()) {
+        std::cerr << "Cannot log EOF, recorder entry missing for client " << clientID << '\n';
+        return;
+    }
+
+    ClientRecord& clientsRecord = it->second;
+
+    float finalConsumption = clientsRecord.getCurrentConsumption();
+    std::string flightName = clientsRecord.getFlightName();
+
+    this->dataLoggr.logEOF(clientID, finalConsumption, flightName);
+}
+
+void Server::validateConnections() {
+    auto nextRun = std::chrono::steady_clock::now();
+    bool test = true;
+
+    while (test) {
+        nextRun += std::chrono::minutes(1);
+        std::time_t now = std::time(nullptr);
+
+        std::unique_lock<std::shared_mutex> lock(activeClientsMutex);
+        for (auto it = activeClients.begin(); it != activeClients.end();) {
+            const std::string& client = it->first;
+            std::time_t lastSeen = it->second;
+
+            double diff = std::difftime(now, lastSeen);
+
+            std::cout << "last_seen: " << lastSeen << std::endl;
+            std::cout << "diff: " << diff << std::endl;
+            std::cout << "now: " << now << std::endl;
+
+            if (diff >= 300) {
+                it = activeClients.erase(it);
+            }
+            else {
+                ++it;
+            }
         }
 
-
+        lock.unlock();
+        std::this_thread::sleep_until(nextRun);
+    }
+}

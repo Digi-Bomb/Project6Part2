@@ -1,33 +1,28 @@
-#include <string>
-#include <iostream>
 #include "ClientRecord.h"
 
-ClientRecord::ClientRecord(std::string clientID, std::string planeFileName, time_t lastSeen){
+#include <ctime>
+#include <iostream>
+#include <string>
 
-    this->clientID = clientID;
-
-    this->planeFileName = planeFileName;
-
-    this->lastSeen = lastSeen;
-    
-    this->currentAverageFuel = 0;
-
-    this->fuelSumCounter = 0; 
-
-    this->currentConsumption = 0.0f;
-
-    this->hasPrevious = false;
+ClientRecord::ClientRecord(std::string clientID, std::string planeFileName, time_t lastSeen)
+    : clientID(clientID),
+    planeFileName(planeFileName),
+    lastSeen(lastSeen),
+    currentAverageFuel(0.0f),
+    fuelSumCounter(0),
+    currentConsumption(0.0f),
+    lastFuel(0.0f),
+    hasPrevious(false)
+{
 }
 
-//TODO: Need to build the desctructor (if we find memory issues)
-ClientRecord::~ClientRecord() {
+ClientRecord::~ClientRecord() = default;
 
-}
-float ClientRecord::getAverageFuel(){
+float ClientRecord::getAverageFuel() {
     return this->currentAverageFuel;
 }
 
-int ClientRecord::getFuelSumCounter(){
+int ClientRecord::getFuelSumCounter() {
     return this->fuelSumCounter;
 }
 
@@ -51,9 +46,12 @@ int ClientRecord::getFuelSum() {
     return this->fuelSumCounter;
 }
 
+float ClientRecord::getCurrentConsumption() {
+    return this->currentConsumption;
+}
+
 void ClientRecord::setClientID(std::string clientID) {
     this->clientID = clientID;
-
 }
 
 void ClientRecord::setPlaneFlightName(std::string planeFileName) {
@@ -66,40 +64,47 @@ void ClientRecord::setTimeLastSeen(time_t lastSeen) {
 
 void ClientRecord::setFuel(float firstPacketFuel) {
     this->currentAverageFuel = firstPacketFuel;
+    this->fuelSumCounter = 1;
+    this->lastFuel = firstPacketFuel;
+    this->hasPrevious = true;
 }
 
-float ClientRecord::getCurrentConsumption() {
-    return this->currentConsumption;
-}
-
-
-void ClientRecord::updateFuelConsumption(float fuel){
+void ClientRecord::updateFuelConsumption(float fuel) {
     if (hasPrevious) {
         this->currentConsumption = this->lastFuel - fuel;
 
-        // prevent negative consumption
-        if (this->currentConsumption < 0) {
-            this->currentConsumption = 0;
+        // Prevent negative consumption if fuel increases or data is noisy
+        if (this->currentConsumption < 0.0f) {
+            this->currentConsumption = 0.0f;
         }
     }
     else {
-        // first packet
-        this->currentConsumption = 0;
-        hasPrevious = true;
+        // First packet has no previous value to compare against
+        this->currentConsumption = 0.0f;
+        this->hasPrevious = true;
     }
 
     this->lastFuel = fuel;
 
-    // update timestamp
-    this->lastSeen = time(nullptr);
+    // Optional running average tracking
+    this->fuelSumCounter++;
+    if (this->fuelSumCounter == 1) {
+        this->currentAverageFuel = fuel;
+    }
+    else {
+        this->currentAverageFuel =
+            ((this->currentAverageFuel * (this->fuelSumCounter - 1)) + fuel) / this->fuelSumCounter;
+    }
 
-    char result[26];
-    ctime_s(result, sizeof(result), &(this->lastSeen));
+    this->lastSeen = std::time(nullptr);
 
-    std::cout << "Current Fuel Consumption: "
-        << this->currentConsumption << std::endl;
-
-    std::cout << "Last time: " << result << std::endl;
+    char result[26]{};
+    if (ctime_s(result, sizeof(result), &(this->lastSeen)) == 0) {
+        std::cout << "Current Fuel Consumption: " << this->currentConsumption << std::endl;
+        std::cout << "Last time: " << result;
+    }
+    else {
+        std::cout << "Current Fuel Consumption: " << this->currentConsumption << std::endl;
+        std::cout << "Last time: <unavailable>" << std::endl;
+    }
 }
-
-

@@ -1,7 +1,7 @@
 #pragma once
 #include <windows.networking.sockets.h>
 #include <string>
-#include "Packet.h"
+#include "../Shared/Packet.h"
 #include "FileReader.h"
 
 #pragma comment(lib, "Ws2_32.lib")

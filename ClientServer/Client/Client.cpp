@@ -1,12 +1,15 @@
 #define NOMINMAX  // Prevent Windows headers from defining min/max macros
-#include <windows.networking.sockets.h>
+#define WIN32_LEAN_AND_MEAN
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <windows.h> // for Sleep
 #pragma comment(lib, "Ws2_32.lib")
 
 #include <fstream>
 #include <string>
 #include <iostream>
 #include <cstdlib>
-#include "Packet.h"
+#include "../Shared/Packet.h"
 #include "Client.h"
 
 #include <direct.h>
@@ -30,8 +33,7 @@ char* generateID()
 
 int main(int argc, char* argv[])
 {
-
-	if (argc != 4) {
+    if (argc != 4) {
         std::cerr << "Usage: " << argv[0] << " <server_ip> <server_port> <telemetry_file>" << std::endl;
         return 1;
     }
@@ -40,11 +42,10 @@ int main(int argc, char* argv[])
     Client cli = Client(argv[1], atoi(argv[2]), argv[3], clientID);
     cli.run();
     delete[] clientID;
-   
+
     return 0;
     // clean up like calling destructors for Client and its fileReader are done here (including closing socket and handling file i/o stuff)
 }
-
 
 Client::Client(const char* ip, int port, const char* fileName, const char* id) {
     this->serverPort = port;
@@ -55,26 +56,30 @@ Client::Client(const char* ip, int port, const char* fileName, const char* id) {
 
     this->fileReader = new FileReader(fileName);
     if (!this->fileReader->openFile()) {
-        std::cerr << "Error: Could not open telemetry file " << fileName << std::endl; // TODO: change to a log
+        std::cerr << "Error: Could not open telemetry file " << fileName << std::endl;
         std::cerr << "Trying to open: " << fileName << std::endl;
     }
 
     WSADATA wsaData;
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
-        std::cerr << "WSAStartup failed." << std::endl; // TODO: change to a log
+        std::cerr << "WSAStartup failed." << std::endl;
         return;
     }
 
     this->clientSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (this->clientSocket == INVALID_SOCKET) {
-        std::cerr << "Socket creation failed: " << WSAGetLastError() << std::endl; // TODO: change to a log
+        std::cerr << "Socket creation failed: " << WSAGetLastError() << std::endl;
         WSACleanup();
         return;
     }
 
     this->serverAddr.sin_family = AF_INET;
     this->serverAddr.sin_port = htons(this->serverPort);
-    this->serverAddr.sin_addr.s_addr = inet_addr(this->serverIP);
+
+    // FIXED: inet_addr -> InetPtonA
+    if (InetPtonA(AF_INET, this->serverIP, &this->serverAddr.sin_addr) != 1) {
+        std::cerr << "Invalid server IP address: " << this->serverIP << std::endl;
+    }
 }
 
 Client::~Client()
@@ -120,7 +125,11 @@ void Client::setServerIP(const char* ip) {
         if (this->serverIP) free(this->serverIP);
 
         this->serverIP = _strdup(ip);
-        this->serverAddr.sin_addr.s_addr = inet_addr(this->serverIP);
+
+        // FIXED: inet_addr -> InetPtonA
+        if (InetPtonA(AF_INET, this->serverIP, &this->serverAddr.sin_addr) != 1) {
+            std::cerr << "Invalid server IP address: " << this->serverIP << std::endl;
+        }
     }
 }
 
@@ -132,32 +141,29 @@ void Client::setServerPort(int port) {
 void Client::run()
 {
     std::string skipPrefix = "FUEL TOTAL QUANTITY,";
-    //this->fileReader
     if (!this->fileReader->openFile())
     {
-        std::cerr << "Unable to open file" << std::endl; // TODO: change to a log
+        std::cerr << "Unable to open file" << std::endl;
     }
 
-    //// send SOF is the only tested function, but others should work
     this->sendStartOfFile();
 
     while (!this->fileReader->isEOF())
     {
-
         std::string line;
 
-        // read line
         if (this->fileReader->readLine(line))
         {
-            if (line.find(skipPrefix) == 0) { // only if it�s at the very start
+            if (line.find(skipPrefix) == 0) {
                 line = line.substr(skipPrefix.length());
             }
-            // send telemetry data
+
             this->sendTelemetry(line);
         }
-        Sleep(1000); // so that at most 1 telemetry packet is sent every second
+
+        Sleep(1000);
     }
-    // send EOF
+
     this->sendEndOfFile();
 }
 
@@ -169,20 +175,15 @@ bool Client::sendStartOfFile()
     pkt.setEndFlag(false);
 
     std::string info = (this->fileReader->getFilePath());
-    //std::cout << "The info being set is: " << info << std::endl;
     pkt.setData((char*)info.c_str(), (int)info.length());
 
     int totalSize = 0;
-
-
     char* buffer = pkt.serialize(totalSize);
 
     int bytesSent = sendto(this->clientSocket, buffer, totalSize, 0,
         (sockaddr*)&this->serverAddr, sizeof(this->serverAddr));
-    //delete[] buffer; THIS BUFFER MIGHT BE AN EXTRA DELETION
-    //std::cout << "sent SOF" << std::endl;
-    return (bytesSent != SOCKET_ERROR);
 
+    return (bytesSent != SOCKET_ERROR);
 }
 
 bool Client::sendTelemetry(const std::string& data)
@@ -201,10 +202,10 @@ bool Client::sendTelemetry(const std::string& data)
         (sockaddr*)&this->serverAddr, sizeof(this->serverAddr));
 
     if (bytesSent == SOCKET_ERROR) {
-        std::cerr << "Telemetry failed to send: " << WSAGetLastError() << std::endl; // TODO: change to a log
+        std::cerr << "Telemetry failed to send: " << WSAGetLastError() << std::endl;
         return false;
     }
-    //delete[] buffer;
+
     return true;
 }
 
@@ -222,6 +223,6 @@ bool Client::sendEndOfFile()
 
     int bytesSent = sendto(this->clientSocket, buffer, totalSize, 0,
         (sockaddr*)&this->serverAddr, sizeof(this->serverAddr));
-    //delete[] buffer;
+
     return (bytesSent != SOCKET_ERROR);
 }

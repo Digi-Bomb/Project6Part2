@@ -4,7 +4,7 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <string>
-#include "Packet.h"
+#include "../Shared/Packet.h"
 #include <iostream>
 #include <map>
 #include <ctime>
