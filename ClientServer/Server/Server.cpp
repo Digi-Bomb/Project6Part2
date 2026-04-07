@@ -78,7 +78,7 @@ void Server::beginServerConnections() {
     char buffer[1024];
 
     while (true) {
-        sockaddr_in clientAddrLocal;   // ✅ FIX: local copy per recv
+        sockaddr_in clientAddrLocal;   
         int clientLen = sizeof(clientAddrLocal);
 
         int bytesReceived = recvfrom(
@@ -86,7 +86,7 @@ void Server::beginServerConnections() {
             buffer,
             sizeof(buffer),
             0,
-            (sockaddr*)&clientAddrLocal,   // ✅ use local
+            (sockaddr*)&clientAddrLocal,   
             &clientLen
         );
 
@@ -103,13 +103,13 @@ void Server::beginServerConnections() {
         if (bytesReceived > 0) {
             auto bufferCopy = std::make_shared<std::vector<char>>(buffer, buffer + bytesReceived);
 
-            // ✅ copy client address into lambda
+            
             boost::asio::post(serverPool,
                 [this, bufferCopy, clientAddrLocal, bytesReceived]() {
 
                     this->receiveConnections(
                         bufferCopy->data(),
-                        clientAddrLocal,   // ✅ pass actual client info
+                        clientAddrLocal,  
                         bytesReceived
                     );
                 }
@@ -121,8 +121,8 @@ void Server::beginServerConnections() {
     WSACleanup();
 }
 // Function that handles each received packet
-void Server::receiveConnections(char* buffer, int clientLength, int bytesReceived) {
-    (void)clientLength; // unused right now
+void Server::receiveConnections(char* buffer, sockaddr_in clientAddr, int bytesReceived){
+    (void)clientAddr; // unused right now
 
     try {
         Packet cur(buffer, bytesReceived);

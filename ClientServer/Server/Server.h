@@ -30,7 +30,7 @@ public:
     ~Server();
     void beginServerConnections();
     void validateConnections();
-    void receiveConnections(char* buffer, int clientLength, int bytesReceived);
+    void receiveConnections(char* buffer, sockaddr_in clientAddr, int bytesReceived);
     void updateActiveClient(std::string clientID, time_t lastReceivedPacket);
     void addRecorderToClient(std::string clientID, std::string planeFileName, time_t connectionTime);
     
