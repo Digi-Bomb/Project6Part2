@@ -1,0 +1,30 @@
+#!/bin/bash
+# Endurance test: repeatedly launch waves of clients
+
+program="./Client.exe"
+files=(
+  "katl-kefd-B737-700.txt"
+  "Telem_2023_3_12 14_56_40.txt"
+  "Telem_2023_3_12 16_26_4.txt"
+  "Telem_czba-cykf-pa28-w2_2023_3_1 12_31_27.txt"
+)
+
+server_ip="127.0.0.1"
+server_port="6767"
+
+count=100
+
+while true; do
+    date +"%T"
+
+    for ((i=0; i<count; i++)); do
+        index=$((i % ${#files[@]}))
+        file="${files[$index]}"
+
+        echo "Launching client $((i + 1)) using $file"
+        "$program" "$server_ip" "$server_port" "$file" &
+    done
+
+    # original batch used timeout 250, which in Windows is seconds
+    sleep 250
+done
