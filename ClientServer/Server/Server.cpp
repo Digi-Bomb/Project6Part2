@@ -33,9 +33,14 @@ int main()
     // TO DO: Initiate background processes here
     std::thread backgroundConnectionCleaner(&Server::validateConnections, &ser);
 
+    std::thread poolThread([]() {
+        serverPool.join();  // runs the worker threads
+        });
+
     ser.beginServerConnections();
 
     backgroundConnectionCleaner.join();
+    poolThread.join();
 
     return 0;
 }
@@ -45,13 +50,11 @@ Server::~Server() {}
 void Server::beginServerConnections() {
     WSADATA wsaData;
 
-    // Initialize Winsock
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
         std::cerr << "WSAStartup failed\n";
         return;
     }
 
-    // Create UDP socket
     this->serverSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (this->serverSocket == INVALID_SOCKET) {
         std::cerr << "Socket creation failed\n";
@@ -59,12 +62,10 @@ void Server::beginServerConnections() {
         return;
     }
 
-    // Set up server address
     this->serverAddr.sin_family = AF_INET;
     this->serverAddr.sin_port = htons(6767);
     this->serverAddr.sin_addr.s_addr = INADDR_ANY;
 
-    // Bind socket
     if (bind(this->serverSocket, (sockaddr*)&this->serverAddr, sizeof(this->serverAddr)) == SOCKET_ERROR) {
         std::cerr << "Bind failed\n";
         closesocket(this->serverSocket);
@@ -75,15 +76,17 @@ void Server::beginServerConnections() {
     std::cout << "UDP Server listening on port 6767...\n";
 
     char buffer[1024];
-    int clientLen = sizeof(this->clientAddr);
 
     while (true) {
+        sockaddr_in clientAddrLocal;   // ✅ FIX: local copy per recv
+        int clientLen = sizeof(clientAddrLocal);
+
         int bytesReceived = recvfrom(
             this->serverSocket,
             buffer,
             sizeof(buffer),
             0,
-            (sockaddr*)&this->clientAddr,
+            (sockaddr*)&clientAddrLocal,   // ✅ use local
             &clientLen
         );
 
@@ -92,7 +95,6 @@ void Server::beginServerConnections() {
             continue;
         }
 
-        // Minimum valid packet = header + CRC tail
         if (bytesReceived < static_cast<int>(Packet::getHeaderSize() + Packet::getTailSize())) {
             std::cerr << "Received packet too small!\n";
             continue;
@@ -101,25 +103,23 @@ void Server::beginServerConnections() {
         if (bytesReceived > 0) {
             auto bufferCopy = std::make_shared<std::vector<char>>(buffer, buffer + bytesReceived);
 
-            boost::asio::post(serverPool, [this, bufferCopy, clientLen, bytesReceived]() {
-                this->receiveConnections(bufferCopy->data(), clientLen, bytesReceived);
-                });
-        }
-    }
+            // ✅ copy client address into lambda
+            boost::asio::post(serverPool,
+                [this, bufferCopy, clientAddrLocal, bytesReceived]() {
 
-    // Unreachable for now, but kept for completeness
-    std::cout << "Final clients:\n";
-    std::shared_lock<std::shared_mutex> lock(activeClientsMutex);
-    for (const auto& client : this->activeClients) {
-        char timeStr[26];
-        ctime_s(timeStr, sizeof(timeStr), &client.second);
-        std::cout << client.first << " last seen at: " << timeStr;
+                    this->receiveConnections(
+                        bufferCopy->data(),
+                        clientAddrLocal,   // ✅ pass actual client info
+                        bytesReceived
+                    );
+                }
+            );
+        }
     }
 
     closesocket(this->serverSocket);
     WSACleanup();
 }
-
 // Function that handles each received packet
 void Server::receiveConnections(char* buffer, int clientLength, int bytesReceived) {
     (void)clientLength; // unused right now
