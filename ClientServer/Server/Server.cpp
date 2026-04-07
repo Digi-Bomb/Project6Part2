@@ -33,14 +33,14 @@ int main()
     // TO DO: Initiate background processes here
     std::thread backgroundConnectionCleaner(&Server::validateConnections, &ser);
 
-    std::thread poolThread([]() {
-        serverPool.join();  // runs the worker threads
-        });
+    //std::thread poolThread([]() {
+    //    serverPool.join();  // runs the worker threads
+    //    });
 
     ser.beginServerConnections();
 
     backgroundConnectionCleaner.join();
-    poolThread.join();
+    serverPool.join();
 
     return 0;
 }
