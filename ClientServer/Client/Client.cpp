@@ -9,6 +9,7 @@
 #include <string>
 #include <iostream>
 #include <cstdlib>
+#include <vector>
 #include "../Shared/Packet.h"
 #include "Client.h"
 
@@ -180,7 +181,9 @@ bool Client::sendStartOfFile()
     int totalSize = 0;
     char* buffer = pkt.serialize(totalSize);
 
-    int bytesSent = sendto(this->clientSocket, buffer, totalSize, 0,
+    std::vector<char> safeBuffer(buffer, buffer + totalSize);
+
+    int bytesSent = sendto(this->clientSocket, safeBuffer.data(), totalSize, 0,
         (sockaddr*)&this->serverAddr, sizeof(this->serverAddr));
 
     return (bytesSent != SOCKET_ERROR);
@@ -198,7 +201,9 @@ bool Client::sendTelemetry(const std::string& data)
     int totalSize = 0;
     char* buffer = pkt.serialize(totalSize);
 
-    int bytesSent = sendto(this->clientSocket, buffer, totalSize, 0,
+    std::vector<char> safeBuffer(buffer, buffer + totalSize);
+
+    int bytesSent = sendto(this->clientSocket, safeBuffer.data(), totalSize, 0,
         (sockaddr*)&this->serverAddr, sizeof(this->serverAddr));
 
     if (bytesSent == SOCKET_ERROR) {
@@ -221,7 +226,9 @@ bool Client::sendEndOfFile()
     int totalSize = 0;
     char* buffer = pkt.serialize(totalSize);
 
-    int bytesSent = sendto(this->clientSocket, buffer, totalSize, 0,
+    std::vector<char> safeBuffer(buffer, buffer + totalSize);
+
+    int bytesSent = sendto(this->clientSocket, safeBuffer.data(), totalSize, 0,
         (sockaddr*)&this->serverAddr, sizeof(this->serverAddr));
 
     return (bytesSent != SOCKET_ERROR);

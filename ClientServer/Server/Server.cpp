@@ -150,8 +150,14 @@ void Server::receiveConnections(char* buffer, sockaddr_in clientAddr, int bytesR
 
             logFinalData(clientID);
 
-            std::unique_lock<std::shared_mutex> lock(activeClientsMutex);
-            this->activeClients.erase(clientID);
+            {
+                std::unique_lock<std::shared_mutex> lock(activeClientsMutex);
+                this->activeClients.erase(clientID);
+            }
+            {
+                std::lock_guard<std::mutex> lock(recorderMutex);
+                this->recorder.erase(clientID);
+            }
         }
         else {
             time(&timeNow);
@@ -313,32 +319,42 @@ void Server::logFinalData(std::string clientID) {
 
 void Server::validateConnections() {
     auto nextRun = std::chrono::steady_clock::now();
-    bool test = true;
 
-    while (test) {
+    while (true) {
         nextRun += std::chrono::minutes(1);
         std::time_t now = std::time(nullptr);
 
-        std::unique_lock<std::shared_mutex> lock(activeClientsMutex);
-        for (auto it = activeClients.begin(); it != activeClients.end();) {
-            const std::string& client = it->first;
-            std::time_t lastSeen = it->second;
+        std::vector<std::string> timedOutClients;
 
-            double diff = std::difftime(now, lastSeen);
+        {
+            std::unique_lock<std::shared_mutex> lock(activeClientsMutex);
+            for (auto it = activeClients.begin(); it != activeClients.end();) {
+                std::time_t lastSeen = it->second;
+                double diff = std::difftime(now, lastSeen);
 
-            std::cout << "last_seen: " << lastSeen << std::endl;
-            std::cout << "diff: " << diff << std::endl;
-            std::cout << "now: " << now << std::endl;
+                std::cout << "Client: " << it->first
+                          << " last_seen: " << lastSeen
+                          << " diff: " << diff << std::endl;
 
-            if (diff >= 300) {
-                it = activeClients.erase(it);
-            }
-            else {
-                ++it;
+                if (diff >= 300) {
+                    timedOutClients.push_back(it->first);
+                    it = activeClients.erase(it);
+                }
+                else {
+                    ++it;
+                }
             }
         }
 
-        lock.unlock();
+        // Clean up recorder entries for timed-out clients
+        if (!timedOutClients.empty()) {
+            std::lock_guard<std::mutex> lock(recorderMutex);
+            for (const auto& clientID : timedOutClients) {
+                std::cout << "Cleaning up timed-out client: " << clientID << std::endl;
+                this->recorder.erase(clientID);
+            }
+        }
+
         std::this_thread::sleep_until(nextRun);
     }
 }
