@@ -6,6 +6,7 @@
 class Packet
 {
 public:
+#pragma pack(push, 1)
     struct Header
     {
         bool startFlag;
@@ -13,6 +14,7 @@ public:
         char clientID[37];
         unsigned int packetSize;
     };
+#pragma pack(pop)
 
 private:
     Header Head;
@@ -46,12 +48,49 @@ public:
         data[Head.packetSize] = '\0';
 
         memcpy(&crc, src + sizeof(Head) + Head.packetSize, sizeof(unsigned int));
+
+        // Validate CRC
+        unsigned int expectedCRC = calculateCRC();
+        if (crc != expectedCRC)
+        {
+            delete[] data;
+            data = nullptr;
+            throw std::runtime_error("CRC mismatch - corrupted packet");
+        }
     }
 
     ~Packet()
     {
         delete[] data;
         delete[] txBuffer;
+    }
+
+    // Delete copy operations to prevent double-free from raw pointers
+    Packet(const Packet &) = delete;
+    Packet &operator=(const Packet &) = delete;
+
+    // Allow move operations
+    Packet(Packet &&other) noexcept
+        : Head(other.Head), data(other.data), crc(other.crc), txBuffer(other.txBuffer)
+    {
+        other.data = nullptr;
+        other.txBuffer = nullptr;
+    }
+
+    Packet &operator=(Packet &&other) noexcept
+    {
+        if (this != &other)
+        {
+            delete[] data;
+            delete[] txBuffer;
+            Head = other.Head;
+            data = other.data;
+            crc = other.crc;
+            txBuffer = other.txBuffer;
+            other.data = nullptr;
+            other.txBuffer = nullptr;
+        }
+        return *this;
     }
 
     static constexpr unsigned int getHeaderSize()
@@ -100,6 +139,35 @@ public:
 
     unsigned int calculateCRC()
     {
-        return 0xFF00FF00;
+        unsigned int result = 0xFFFFFFFF;
+        // CRC over header
+        const unsigned char *headerBytes = reinterpret_cast<const unsigned char *>(&Head);
+        for (unsigned int i = 0; i < sizeof(Head); i++)
+        {
+            result ^= headerBytes[i];
+            for (int bit = 0; bit < 8; bit++)
+            {
+                if (result & 1)
+                    result = (result >> 1) ^ 0xEDB88320;
+                else
+                    result >>= 1;
+            }
+        }
+        // CRC over data
+        if (data != nullptr)
+        {
+            for (unsigned int i = 0; i < Head.packetSize; i++)
+            {
+                result ^= static_cast<unsigned char>(data[i]);
+                for (int bit = 0; bit < 8; bit++)
+                {
+                    if (result & 1)
+                        result = (result >> 1) ^ 0xEDB88320;
+                    else
+                        result >>= 1;
+                }
+            }
+        }
+        return result ^ 0xFFFFFFFF;
     }
 };
