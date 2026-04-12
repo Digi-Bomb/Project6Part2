@@ -14,6 +14,9 @@
 #include <chrono>
 #include <atomic>
 #include <shared_mutex>
+#include <vector>
+#include <mutex>
+#include <unordered_set>
 
 class Server {
 private: 
@@ -24,6 +27,8 @@ private:
     sockaddr_in serverAddr;
     sockaddr_in clientAddr;
     DataLogging dataLoggr;
+    std::unordered_set<std::string> uniqueFlightFiles;
+    std::mutex flightFileMutex;
 
 public:
     //Server()

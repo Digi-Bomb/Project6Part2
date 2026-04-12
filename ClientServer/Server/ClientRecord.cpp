@@ -98,13 +98,13 @@ void ClientRecord::updateFuelConsumption(float fuel) {
 
     this->lastSeen = std::time(nullptr);
 
-    char result[26]{};
-    if (ctime_s(result, sizeof(result), &(this->lastSeen)) == 0) {
-        std::cout << "Current Fuel Consumption: " << this->currentConsumption << std::endl;
-        std::cout << "Last time: " << result;
-    }
-    else {
-        std::cout << "Current Fuel Consumption: " << this->currentConsumption << std::endl;
-        std::cout << "Last time: <unavailable>" << std::endl;
-    }
+    //char result[26]{};
+    //if (ctime_s(result, sizeof(result), &(this->lastSeen)) == 0) {
+    //    std::cout << "Current Fuel Consumption: " << this->currentConsumption << std::endl;
+    //    std::cout << "Last time: " << result;
+    //}
+    //else {
+    //    std::cout << "Current Fuel Consumption: " << this->currentConsumption << std::endl;
+    //    std::cout << "Last time: <unavailable>" << std::endl;
+    //}
 }

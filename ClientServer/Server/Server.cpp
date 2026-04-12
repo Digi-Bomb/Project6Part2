@@ -76,7 +76,7 @@ void Server::beginServerConnections() {
     std::cout << "UDP Server listening on port 6767...\n";
 
     char buffer[1024];
-
+    this->dataLoggr.initConnectionLog();
     while (true) {
         sockaddr_in clientAddrLocal;   
         int clientLen = sizeof(clientAddrLocal);
@@ -133,12 +133,21 @@ void Server::receiveConnections(char* buffer, sockaddr_in clientAddr, int bytesR
             std::cout << "Received Client: " << clientID << std::endl;
             std::string flightFile(cur.getTelemetryData());
 
+            std::lock_guard<std::mutex> lock(flightFileMutex);
+
+            auto result = this->uniqueFlightFiles.insert(flightFile);
+
+            if (result.second) {
+                this->dataLoggr.populateDataLogMapper(flightFile);
+            }
+            
             time(&timeNow);
 
             updateActiveClient(clientID, timeNow);
             addRecorderToClient(clientID, flightFile, timeNow);
 
             float initialFuel = 0.0f;
+            
             this->dataLoggr.logConnection(
                 (char*)clientID.c_str(),
                 initialFuel,
@@ -237,7 +246,7 @@ void Server::callDataLogic(std::string clientID, float fuel, time_t timeReceived
 
     auto it = this->recorder.find(clientID);
     if (it == this->recorder.end()) {
-        std::cerr << "Recorder entry missing for client " << clientID << '\n';
+       // std::cerr << "Recorder entry missing for client " << clientID << '\n';
         return;
     }
 
@@ -326,17 +335,20 @@ void Server::validateConnections() {
 
         std::vector<std::string> timedOutClients;
 
-        {
+        {   
+            if (activeClients.empty()) {
+                this->dataLoggr.closeAllFiles();
+            }
             std::unique_lock<std::shared_mutex> lock(activeClientsMutex);
             for (auto it = activeClients.begin(); it != activeClients.end();) {
                 std::time_t lastSeen = it->second;
                 double diff = std::difftime(now, lastSeen);
 
-                std::cout << "Client: " << it->first
+                /*std::cout << "Client: " << it->first
                           << " last_seen: " << lastSeen
-                          << " diff: " << diff << std::endl;
+                          << " diff: " << diff << std::endl;*/
 
-                if (diff >= 300) {
+                if (diff >= 60) {
                     timedOutClients.push_back(it->first);
                     it = activeClients.erase(it);
                 }
