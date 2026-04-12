@@ -149,18 +149,15 @@ void Client::run()
 
     this->sendStartOfFile();
 
-    while (!this->fileReader->isEOF())
+    std::string line;
+
+    while (this->fileReader->readLine(line))
     {
-        std::string line;
-
-        if (this->fileReader->readLine(line))
-        {
-            if (line.find(skipPrefix) == 0) {
-                line = line.substr(skipPrefix.length());
-            }
-
-            this->sendTelemetry(line);
+        if (line.find(skipPrefix) == 0) {
+            line = line.substr(skipPrefix.length());
         }
+
+        this->sendTelemetry(line);
 
         Sleep(1000);
     }
