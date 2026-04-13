@@ -174,10 +174,6 @@ void Client::setServerPort(int port) {
 void Client::run()
 {
     std::string skipPrefix = "FUEL TOTAL QUANTITY,";
-    if (!this->fileReader->openFile())
-    {
-        std::cerr << "Unable to open file" << std::endl;
-    }
 
     this->sendStartOfFile();
 
