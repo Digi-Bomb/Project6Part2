@@ -1,14 +1,26 @@
 #pragma once
+
+#ifdef _WIN32
 #include <windows.networking.sockets.h>
+#pragma comment(lib, "Ws2_32.lib")
+#else
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#endif
+
 #include <string>
 #include "../Shared/Packet.h"
 #include "FileReader.h"
 
-#pragma comment(lib, "Ws2_32.lib")
-
 class Client {
 private:
+#ifdef _WIN32
     SOCKET clientSocket;
+#else
+    int clientSocket;
+#endif
     sockaddr_in serverAddr;
     char* serverIP;
     int serverPort;

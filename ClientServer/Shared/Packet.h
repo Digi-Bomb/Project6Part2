@@ -13,14 +13,18 @@ public:
         bool endFlag;
         char clientID[37];
         unsigned int packetSize;
-    };
+    }
+#ifdef __GNUC__
+    __attribute__((packed))
+#endif
+    ;
 #pragma pack(pop)
 
 private:
     Header Head;
     char *data;
-    unsigned int crc;
     char *txBuffer;
+    unsigned int crc;
 
 public:
     Packet() : data(nullptr), txBuffer(nullptr), crc(0)
@@ -105,7 +109,11 @@ public:
 
     void setStartFlag(bool val) { Head.startFlag = val; }
     void setEndFlag(bool val) { Head.endFlag = val; }
+#ifdef _WIN32
     void setClientID(const char *id) { strncpy_s(Head.clientID, sizeof(Head.clientID), id, 36); }
+#else
+    void setClientID(const char *id) { memcpy(Head.clientID, id, 36); Head.clientID[36] = '\0'; }
+#endif
 
     char *getClientID() { return Head.clientID; }
     bool getStartFlag() { return Head.startFlag; }

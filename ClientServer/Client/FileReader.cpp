@@ -1,8 +1,9 @@
 #include "FileReader.h"
+#include <cstring>
 
 FileReader::FileReader(const char* path)
 {
-	this->filePath = _strdup(path);
+	this->filePath = strdup(path);
 	this->lineNumber = 1;
 }
 
@@ -32,41 +33,18 @@ bool FileReader::openFile()
 
 bool FileReader::readLine(std::string& lineRead)
 {
-    if (this->fileStream.is_open() && !this->isEOF()) {
-        if (std::getline(this->fileStream, lineRead)) {
-            this->lineNumber++;
-            return true;
-        }
+    if (this->fileStream.is_open() && std::getline(this->fileStream, lineRead)) {
+        this->lineNumber++;
+        return true;
     }
     return false;
 }
 
 bool FileReader::isEOF()
 {
-
-    // clear failbit (might not be an error when opening file through cmd, but these lines enable manual testing)
-    this->fileStream.clear();      
-   // this->fileStream.seekg(0);     
-
     if (!this->fileStream.is_open()) {
-        
         return true;
     }
 
-    if (this->fileStream.eof()) {
-      
-        return true;
-    }
-
-    while (isspace(this->fileStream.peek())) {
-        this->fileStream.get();
-    }
-
-    int nextChar = this->fileStream.peek();
-    if (nextChar == EOF) {
-       
-        return true;
-    }
-
-    return false;
+    return this->fileStream.eof() || this->fileStream.peek() == EOF;
 }
