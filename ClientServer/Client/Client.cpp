@@ -1,4 +1,5 @@
 #ifdef _WIN32
+#define _CRT_NONSTDC_NO_DEPRECATE
 #define NOMINMAX  // Prevent Windows headers from defining min/max macros
 #define WIN32_LEAN_AND_MEAN
 #include <winsock2.h>

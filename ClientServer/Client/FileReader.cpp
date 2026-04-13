@@ -1,3 +1,6 @@
+#ifdef _WIN32
+#define _CRT_NONSTDC_NO_DEPRECATE
+#endif
 #include "FileReader.h"
 #include <cstring>
 
