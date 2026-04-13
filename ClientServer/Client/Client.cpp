@@ -148,8 +148,9 @@ void Client::run()
     }
 
     this->sendStartOfFile();
-
-    while (!this->fileReader->isEOF())
+    std::string line;
+    while (this->fileReader->readLine(line))
+   
     {
         std::string line;
 
