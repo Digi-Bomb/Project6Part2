@@ -23,6 +23,11 @@
 
 boost::asio::thread_pool serverPool(30);
 
+/**
+*@file Server.cpp
+* @brief The Server c++ logic. Receives connections from a client, parses packets, and handles telemetry data per client.
+*/
+
 // Protect recorder map access across worker threads
 static std::mutex recorderMutex;
 
@@ -30,12 +35,8 @@ int main()
 {
     Server ser;
 
-    // TO DO: Initiate background processes here
+    // Background 
     std::thread backgroundConnectionCleaner(&Server::validateConnections, &ser);
-
-    //std::thread poolThread([]() {
-    //    serverPool.join();  // runs the worker threads
-    //    });
 
     ser.beginServerConnections();
 
@@ -47,6 +48,10 @@ int main()
 
 Server::~Server() {}
 
+/**
+* @brief beginServerConnections opens the server for incoming client packets.
+*        THIS IS AN INFINITE LOOP. SERVER WILL ACCEPT ALL CONNECTIONS UNTIL STOPPED
+*/
 void Server::beginServerConnections() {
     WSADATA wsaData;
 
@@ -120,7 +125,16 @@ void Server::beginServerConnections() {
     closesocket(this->serverSocket);
     WSACleanup();
 }
-// Function that handles each received packet
+/**
+* @brief recieveConnections handles the specifics of each received packet, executing the necessary logic needed for each type of received packet
+*        STARTFLIGHTPACKET: Logs client ID, FlightName, and Connection Time.
+*        TELEMETRYPACKET: Logs all telemetry data, calling the respective client's clientRecord to assess, store, and log data.
+*        ENDFLIGHTPACKET: Clears activeClients of mapper, de-allocates all data used by this particular Client.
+* 
+* @param [char*] buffer holds the unserialized telemetry data received
+* @param [sockaddr_in] clientAddr holds the address of the incoming client
+* @param [int] bytesReceived holds the size of the incoming packet
+*/
 void Server::receiveConnections(char* buffer, sockaddr_in clientAddr, int bytesReceived){
     (void)clientAddr; // unused right now
 
@@ -230,6 +244,11 @@ void Server::receiveConnections(char* buffer, sockaddr_in clientAddr, int bytesR
     }
 }
 
+/**
+    * @brief getClientsRecorder is a function to find the active client's clientRecord instance
+    * @param [string] clientID, as it sounds, holds the ID of the client who's clientRecord is being requested
+    * @return this function returns the respective client's clientRecord instance, if the client exists
+*/
 ClientRecord Server::getClientsRecorder(std::string clientID) {
     std::lock_guard<std::mutex> lock(recorderMutex);
 
@@ -241,6 +260,12 @@ ClientRecord Server::getClientsRecorder(std::string clientID) {
     return it->second;
 }
 
+/**
+    * @brief callDataLogic calls the instance of the respective client's clientRecord, ensuring each received packet's telemetry data is handled for each client
+    * @param [string] clientID, as it sounds, holds the ID of the client who's clientRecord is being requested
+    * @param [float] fuel holds the parsed fuel value from the current client's received packet
+    * @param [time_t] timeReceived, as it sounds, holds the time and date of when the packet was received by the server for this particular client
+*/
 void Server::callDataLogic(std::string clientID, float fuel, time_t timeReceived) {
     std::lock_guard<std::mutex> lock(recorderMutex);
 
@@ -263,6 +288,12 @@ void Server::callDataLogic(std::string clientID, float fuel, time_t timeReceived
     );
 }
 
+/**
+    * @brief addRecorderToClient maps each given client to the plane who's data they're transmitting.
+    * @param [string] clientID, as it sounds, holds the ID of the client who's clientRecord is being requested
+    * @param [string] planeFileName, as it sounds, holds the name of the flight who's data is being transmitted
+    * @param [time_t] connectionTime, as it sounds, holds the time and date of when the packet was received by the server for this particular client
+*/
 void Server::addRecorderToClient(std::string clientID, std::string planeFileName, time_t connectionTime) {
     std::lock_guard<std::mutex> lock(recorderMutex);
 
@@ -277,11 +308,22 @@ void Server::addRecorderToClient(std::string clientID, std::string planeFileName
     }
 }
 
+/**
+    * @brief updateActiveClient ensures that any packet received by a particular client tells the server that a client is still connected
+    * @param [string] clientID, as it sounds, holds the ID of the client who's clientRecord is being requested
+    * @param [time_t] connectionTime, as it sounds, holds the time and date of when the packet was received by the server for this particular client, ensuring that the server knows the status of this client
+*/
 void Server::updateActiveClient(std::string clientID, time_t lastReceivedPacket) {
     std::unique_lock<std::shared_mutex> lock(activeClientsMutex);
     this->activeClients[clientID] = lastReceivedPacket;
 }
 
+/**
+    * @brief convertStringToTime is a function used for logging and data logic purposes, as time_t variables require a specific, machine readable format
+    * @param [string] parsedTime holds the time data that was parsed from an incoming packet
+    * @param [string] parsedDate holds the date data that was parsed from an incoming packet
+    * @return this function returns a time_t variable that is machine readable, and needed for logging/data logic purposes
+*/
 time_t Server::convertStringToTime(std::string parsedTime, std::string parsedDate) {
     std::tm timeStruct = {};
 
@@ -309,6 +351,10 @@ time_t Server::convertStringToTime(std::string parsedTime, std::string parsedDat
     return mktime(&timeStruct);
 }
 
+/**
+    * @brief logFinalData is called when an EOF packet is received from a particular client
+    * @param [string] clientID, as it sounds, holds the ID of the client who's clientRecord is being requested
+*/
 void Server::logFinalData(std::string clientID) {
     std::lock_guard<std::mutex> lock(recorderMutex);
 
@@ -326,6 +372,10 @@ void Server::logFinalData(std::string clientID) {
     this->dataLoggr.logEOF(clientID, finalConsumption, flightName);
 }
 
+/**
+    * @brief validateConnections is a background thread utilized by the server to clean out clients who've crashed, or whose EOF packets were lost during transmission.
+    *        SPECIFICS: Runs every minute, checking the activeClients map object to ensure that any client existing on the mapper has sent a packet within the past minute (=> 1 minute of inactivity indicates a crash or lost packet)
+*/
 void Server::validateConnections() {
     auto nextRun = std::chrono::steady_clock::now();
 

@@ -2,11 +2,21 @@
 #include <fstream>
 #include "DataLogging.h"
 
+/**
+* @file DataLogging.cpp
+* @brief The DataLogging c++ logic. Logs datetime data, ongoing fuel levels, fuel consumption, per client ID (logs client ID as well)
+*/
+
 DataLogging::~DataLogging() {}
+
 
 void DataLogging::DataLogic(char *path)
 {
 }
+
+/**
+    * @brief initConnectionLog is called only once by the server, and opens a log file to track client connections
+*/
 void DataLogging::initConnectionLog() {
     this->connectionLog.open("connection.log", std::ios::app);
 
@@ -15,6 +25,12 @@ void DataLogging::initConnectionLog() {
     }
 }
 
+/**
+    * @brief logConnection initializes each client's connection, and is meant to audit who is connection.
+    * @param [string] clientID, as it sounds, holds the ID of the client who's clientRecord is being requested
+    * @param [float] fuel holds the parsed fuel value from the client's initial packet (= 0.00)
+    * @param [float] consumption holds the ongoing fuel consumption average value for the respective client's initial packet (= 0.00)
+*/
 void DataLogging::logConnection(char *clientID, float fuel, float consumption){
     
     this->connLogMutex.lock();
@@ -25,6 +41,13 @@ void DataLogging::logConnection(char *clientID, float fuel, float consumption){
     //this->connectionLog.close();
 }
 
+/**
+    * @brief populateDataLogMapper creates a unique ofstream variable for each unique filename received, keeping the file opened open until there are no active client connections
+    *
+      NOTE: This function ensures that only ONE file is opened for logging PER FILENAME
+    * @param [string] planeFileName, as it sounds, holds the name of the flight who's data is being transmitted
+* 
+*/
 void DataLogging::populateDataLogMapper(std::string planeFileName) {
     std::cout << "called" << std::endl;
     std::lock_guard<std::mutex> lock(this->LogMutexMapMutex);
@@ -49,13 +72,15 @@ void DataLogging::populateDataLogMapper(std::string planeFileName) {
     }
 }
 
+/**
+    * @brief logData does exactly what it sounds like, logging the incoming telemetry data to each flight's log.
+    * @param [char*] clientID, as it sounds, holds the ID of the client who's clientRecord is being requested
+    * @param [float] fuel holds the parsed fuel value from the respective client's received packet
+    * @param [float] consumption holds the ongoing fuel consumption average value for the respective client
+    * @param [char*] planeFileName, as it sounds, holds the name of the flight who's data is being transmitted
+*/
 void DataLogging::logData(char *clientID, float fuel, float consumption, char *planeFileName){
-   /* std::ofstream file(planeFileName, std::ios::app);
-
-    if (!file) {
-        std::cerr << "Error opening file: " << planeFileName << std::endl;
-        return;
-    }*/
+ 
     std::mutex& mtx = this->LogMutexes.at(planeFileName);
     std::lock_guard<std::mutex> lock(mtx);
 
@@ -70,10 +95,14 @@ void DataLogging::logData(char *clientID, float fuel, float consumption, char *p
          << " | Fuel: " << fuel
          << " | Consumption: " << consumption << "\n";
 
-    //this->LogMutexes[planeFileName].unlock();
-    //file.close();
 }
 
+/**
+    * @brief logEOF logs the passed client's final fuel consumption average across the duration of their flight
+    * @param [string] clientID, as it sounds, holds the ID of the client who's clientRecord is being requested
+    * @param [float] consumption holds the final fuel consumption average value for the respective client
+    * @param [char*] planeFileName, as it sounds, holds the name of the flight who's data is being transmitted
+*/
 void DataLogging::logEOF(std::string clientID, float consumption, std::string planeFileName){
     std::mutex& mtx = this->LogMutexes.at(planeFileName);
     std::lock_guard<std::mutex> lock(mtx);
@@ -87,10 +116,13 @@ void DataLogging::logEOF(std::string clientID, float consumption, std::string pl
 
     file << "[EOF] Client: " << clientID
         << " | Final Consumption: " << consumption << "\n";
-
-   // file.close();
 }
 
+/**
+    * @brief closeAllFiles, aptly named, closes any open ofstream variables/files. This essentially finalizes the logging of a flight's data.
+    *
+    NOTE: This is called ONLY when there are NO ACTIVE CLIENTS.
+*/
 void DataLogging::closeAllFiles()
 {
     std::lock_guard<std::mutex> lock(LogMutexMapMutex);
@@ -111,6 +143,12 @@ void DataLogging::closeAllFiles()
     LogMutexes.clear(); 
     std::cout << "All files closed" << std::endl;
 }
+
+/**
+    * @brief logError, aptly named, ensures that an audit is created if any errors occur during attempting to log some data.
+    * @param [char*] clientID, as it sounds, holds the ID of the client who's clientRecord is being requested
+    * @param [char*] error holds the specifics of the error thrown by the system/server
+*/
 void DataLogging::logError(char *clientID, char *error){
     std::ofstream file("error.log", std::ios::app);
 

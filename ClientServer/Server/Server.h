@@ -17,9 +17,28 @@
 #include <vector>
 #include <mutex>
 #include <unordered_set>
+/**
+*@file server.h
+* @brief The server class' header. Accepts incoming packets, logs active clients, dictates the behavior of incoming data
+*/
 
+/**
+    *
+    * @brief The server Class. Private variables listed here:
+    * @param [SOCKET] serverSocket is the socket that accepts incoming connections
+    * @param [map] activeClients is the mapper that tracks clients and their recent posts/transmissions
+    * @param [shared_mutex] activeClientsMutex prevents memory contention for reading and writing to the activeClients map by server's threads
+    * @param [map] recorder maps each client to their ClientRecord class
+    * @param [sockaddr_in] serverAddr, socket address for server
+    * @param [sockaddr_in] clientAddr, socket address of client
+    * @param [DataLogging] dataLoggr is the sole class responsible for logging client averages, names, and received information from each packet
+    * @param [unordered_set] uniqueFlightFiles tracks the name of each file/flight received by the server, only storing unique names
+    * @param [mutex] flightFileMutex prevents each file's instance from being accessed by more than one thread at a time, preventing memory contention
+    */
 class Server {
+
 private: 
+    
     SOCKET serverSocket;
     std::map<std::string, std::time_t> activeClients; // Client and last received transmission
     std::shared_mutex activeClientsMutex;
