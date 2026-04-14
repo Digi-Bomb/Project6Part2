@@ -1,0 +1,23 @@
+var searchData=
+[
+  ['generateid_0',['generateID',['../_client_8cpp.html#ad809ff48e29bd78dca9cd703b290ecab',1,'Client.cpp']]],
+  ['getaveragefuel_1',['getAverageFuel',['../class_client_record.html#a80a051d4af114b559b674ad85c3811eb',1,'ClientRecord']]],
+  ['getclientid_2',['getClientID',['../class_client.html#a17f75fb80518e57473365d81f3660c37',1,'Client::getClientID()'],['../class_client_record.html#a105844a6cbf6b8f2e51dc7a27b996e1e',1,'ClientRecord::getClientID()'],['../class_packet.html#a7679980aa93565ccb72fb02d11413834',1,'Packet::getClientID()']]],
+  ['getclientsrecorder_3',['getClientsRecorder',['../class_server.html#ad829fddfc5a1f8ed06f3db382d9fb250',1,'Server']]],
+  ['getcuravgfuel_4',['getCurAvgFuel',['../class_client_record.html#a5c0511665e348ec89c8974a5e704471c',1,'ClientRecord']]],
+  ['getcurrentconsumption_5',['getCurrentConsumption',['../class_client_record.html#af498188c3d9d6aba981afd450b4828c4',1,'ClientRecord']]],
+  ['getendflag_6',['getEndFlag',['../class_packet.html#ab54226ef0ddd4455fc3aaec933139bbc',1,'Packet']]],
+  ['getfilepath_7',['getFilePath',['../class_file_reader.html#a8d7f7beb56de072a7e94e3f6fb1528c0',1,'FileReader']]],
+  ['getflightname_8',['getFlightName',['../class_client_record.html#a4f519e53791d571e754a4ca196a899d1',1,'ClientRecord']]],
+  ['getfuelsum_9',['getFuelSum',['../class_client_record.html#a8f5338a2e85198ea00edff82c19bf19c',1,'ClientRecord']]],
+  ['getfuelsumcounter_10',['getFuelSumCounter',['../class_client_record.html#afc644d5deca598ef0229251933ee9bc9',1,'ClientRecord']]],
+  ['getheadersize_11',['getHeaderSize',['../class_packet.html#aa760a840397e408ed14d846fbced0e9e',1,'Packet']]],
+  ['getlastseen_12',['getLastSeen',['../class_client_record.html#aef4f3e35e86481283b7bd1ba9adbf146',1,'ClientRecord']]],
+  ['getlinenumber_13',['getLineNumber',['../class_file_reader.html#a57d74713e64a619bce789bd57dd41208',1,'FileReader']]],
+  ['getpacketsize_14',['getPacketSize',['../class_packet.html#a5333b9c12072c62ac808e7c125e7ca91',1,'Packet']]],
+  ['getserverip_15',['getServerIP',['../class_client.html#aca0d72148e4e6bb2ac20771f0972048e',1,'Client']]],
+  ['getserverport_16',['getServerPort',['../class_client.html#afd9db35e1482005e9ac4370ba5a36592',1,'Client']]],
+  ['getstartflag_17',['getStartFlag',['../class_packet.html#aa7e590a568a9f79f17e95a5e84fe9244',1,'Packet']]],
+  ['gettailsize_18',['getTailSize',['../class_packet.html#accde508439b39fcf5d7f1d3f18e540cd',1,'Packet']]],
+  ['gettelemetrydata_19',['getTelemetryData',['../class_packet.html#a4c2c4786b47795c2dff5a8e37fcae5e0',1,'Packet']]]
+];
