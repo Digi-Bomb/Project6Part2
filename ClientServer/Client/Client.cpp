@@ -15,11 +15,22 @@
 
 #include <direct.h>
 
+/**
+*@file Client.cpp
+*@brief The Client c++ logic. Generates a unique ID for each client on startup, generates and sends packets to the server by reading telemetry data from a flight data
+*/
+
+
 #undef small  // Windows headers define 'small' as a macro which conflicts with Boost
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
+/**
+* @brief Function that leverages a Boost library to generate a unique ID for each running client
+* 
+REQUIRES BOOST LIBRARY REFERENCE
+*/
 char* generateID()
 {
     boost::uuids::random_generator gen;
@@ -32,6 +43,9 @@ char* generateID()
     return IDchar;
 }
 
+/**
+* @brief Main for constructing and running a client, sending file telemetry data alongside unique ID.
+*/
 int main(int argc, char* argv[])
 {
     if (argc != 4) {
@@ -48,6 +62,9 @@ int main(int argc, char* argv[])
     // clean up like calling destructors for Client and its fileReader are done here (including closing socket and handling file i/o stuff)
 }
 
+/**
+* @brief Client constructor that intializes a client with the necessary information needed for sending data to the server
+*/
 Client::Client(const char* ip, int port, const char* fileName, const char* id) {
     this->serverPort = port;
     this->serverIP = _strdup(ip);
@@ -83,6 +100,9 @@ Client::Client(const char* ip, int port, const char* fileName, const char* id) {
     }
 }
 
+/**
+* @brief Client desctructor for post-run cleanup of clients
+*/
 Client::~Client()
 {
     if (this->fileReader != nullptr) {
@@ -102,18 +122,31 @@ Client::~Client()
     WSACleanup();
 }
 
+/**
+* @brief Getter function that returns the respective Client ID
+*/
 const char* Client::getClientID() const {
     return this->clientID;
 }
 
+/**
+* @brief Getter function that returns the Server's IP (set within Client constructor)
+*/
 const char* Client::getServerIP() const {
     return this->serverIP;
 }
 
+/**
+* @brief Getter function that returns the Server's Port (set within Client constructor)
+*/
 int Client::getServerPort() const {
     return this->serverPort;
 }
 
+/**
+* @brief Function that copies a generated ID to the Client
+* @param [const char*] id, the generated unique id to copy to the client
+*/
 void Client::setClientID(const char* id) {
     if (id) {
         strncpy_s(this->clientID, sizeof(this->clientID), id, 36);
@@ -121,6 +154,10 @@ void Client::setClientID(const char* id) {
     }
 }
 
+/**
+* @brief Function that copies the server IP to the Client
+* @param [const char*] ip, the generated server ip to copy to the client
+*/
 void Client::setServerIP(const char* ip) {
     if (ip) {
         if (this->serverIP) free(this->serverIP);
@@ -134,11 +171,19 @@ void Client::setServerIP(const char* ip) {
     }
 }
 
+/**
+* @brief Function that copies the Server's port to the Client
+* @param [const char*] port, the server's port to copy to the client
+*/
 void Client::setServerPort(int port) {
     this->serverPort = port;
     this->serverAddr.sin_port = htons(this->serverPort);
 }
 
+/**
+* @brief Function that executes client logic. This function opens the passed file for reading, sending each read line as a serialized packet to the serevr
+* @param [const char*] id, the generated unique id to copy to the client
+*/
 void Client::run()
 {
     std::string skipPrefix = "FUEL TOTAL QUANTITY,";
@@ -165,6 +210,21 @@ void Client::run()
     this->sendEndOfFile();
 }
 
+/**
+* @brief Function that sends an SOF packet to the server. 
+
+____________________________________________________________________
+
+SOF PACKET INCLUDES:
+
+Client ID
+
+Start Flag (indicates that this is an SOF packet)
+
+Plane Flight Name (the flight file)
+
+* @return [int] Returns the number of bytes sent, if successful.
+*/
 bool Client::sendStartOfFile()
 {
     Packet pkt;
@@ -186,6 +246,19 @@ bool Client::sendStartOfFile()
     return (bytesSent != SOCKET_ERROR);
 }
 
+/**
+* @brief Function that sends regular telemetry data. 
+
+____________________________________________________________________
+
+TELEMETRY DATA INCLUDES:
+
+Client ID
+
+Data (Date, Time, Current Fuel Level)
+* @param [const string&] data, the data to serialize and send (the line of the file read)
+* @return [bool] returns a true or false value based on the success status of the telemetry send attempt
+*/
 bool Client::sendTelemetry(const std::string& data)
 {
     Packet pkt;
@@ -211,6 +284,18 @@ bool Client::sendTelemetry(const std::string& data)
     return true;
 }
 
+/**
+* @brief Function that sends an EOF packet to the Server. 
+
+____________________________________________________________________
+
+EOF DATA INCLUDES:
+
+Client ID
+
+EOF Flag
+* @return [int] Returns the number of bytes sent, if successful.
+*/
 bool Client::sendEndOfFile()
 {
     Packet pkt;

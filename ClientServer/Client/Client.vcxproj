@@ -143,7 +143,7 @@
   <ItemGroup>
     <ClCompile Include="Client.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\ben\Downloads\boost_1_90_0\boost_1_90_0;C:\Users\blipp\Downloads\boost_1_90_0\boost_1_90_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\ben\Downloads\boost_1_90_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\ben\Downloads\boost_1_90_0;C:\Users\blipp\Downloads\boost_1_90_0\boost_1_90_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

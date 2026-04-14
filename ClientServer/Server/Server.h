@@ -25,6 +25,9 @@
 /**
     *
     * @brief The server Class. Private variables listed here:
+    
+
+    ____________________________________________________________________
     * @param [SOCKET] serverSocket is the socket that accepts incoming connections
     * @param [map] activeClients is the mapper that tracks clients and their recent posts/transmissions
     * @param [shared_mutex] activeClientsMutex prevents memory contention for reading and writing to the activeClients map by server's threads
@@ -50,7 +53,6 @@ private:
     std::mutex flightFileMutex;
 
 public:
-    //Server()
     ~Server();
     void beginServerConnections();
     void validateConnections();
@@ -62,5 +64,4 @@ public:
     void callDataLogic(std::string clientID, float fuel, time_t timeReceived);
     time_t convertStringToTime(std::string parsedTime, std::string parsedDate);
     void logFinalData(std::string clientID);
-    //char* clientID, char* planeFileName, time_t lastSeen, float initFuel
 };

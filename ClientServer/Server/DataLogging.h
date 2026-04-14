@@ -11,6 +11,8 @@
 
 /**
 * @brief DataLogging class. Private variables listed here:
+
+____________________________________________________________________
 * @param [map] DataLogs maintains pointers to each unique filename read by the server from packets
 * @param [map] LogMutexes maps a flight name (and thereby, a flight's log file) to a mutex
 * @param [mutex] Put simply, LogMutexMapMutex provides a mutex to the mutex mapper, since memory contention for a mapper needs to be avoid

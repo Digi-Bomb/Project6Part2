@@ -9,6 +9,9 @@
 
 /**
 * @brief ClientRecord class. Private variables listed here:
+* 
+
+____________________________________________________________________
 * @param [string] clientID represents the each client's unique ID
 * @param [string] planeFileName represents the flight file whose data is being transmitted
 * @param [time_t] lastSeen represents the most recent datetime in which the server has received a message from each client
